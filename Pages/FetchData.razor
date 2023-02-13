@@ -1,57 +1,157 @@
-﻿@page "/fetchdata"
+﻿@page "/q/{query}"
 @inject HttpClient Http
 
-<PageTitle>Weather forecast</PageTitle>
+<PageTitle>Trials</PageTitle>
 
-<h1>Weather forecast</h1>
+<h1>Trials</h1>
 
-<p>This component demonstrates fetching data from the server.</p>
 
-@if (forecasts == null)
+@if (trials == null && trialCount == null)
 {
-    <p><em>Loading...</em></p>
+<p><em>...fetching data from clinicaltrials.gov...</em></p>
+}
+else if (trialCount == 0) {
+    <p>no results for query</p>
 }
 else
 {
+    string? lastGroup = null;
     <table class="table">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
+                <th>NCTId</th>
+                <th>Sponsor</th>
+                <th>Intervention</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>EndDate</th>
+                <th>LastUpdate</th>
+                <th>SeeAlsoLinkURL</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in forecasts)
+            @foreach (var trial in trials)
             {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
+                if (!trial.Closed)
+                {
+                    if (lastGroup != trial?.PhaseInfo?.Name) {
+                        lastGroup = trial?.PhaseInfo?.Name;
+
+                        <tr><td colspan=8 style=background:black;color:white;font-weight:bold>
+                            @trial?.PhaseInfo?.Name
+                        </td></tr>
+                    }
+
+                    <tr>
+                        <td>@trial.NCTId[0]</td>
+                        <td>@trial.LeadSponsorName[0]</td>
+                        <td>@(trial.InterventionName.Count > 0 ? trial.InterventionName[0] : "")</td>
+                        <td>@trial.BriefTitle[0]</td>
+                        <td>@trial.OverallStatusStyle @(trial.WhyStopped.Count > 0 ? ": " + trial.WhyStopped[0] : "")</td>
+                        <td>@trial.EndDate</td>
+                        <td>@trial.LastUpdatePostDate[0]</td>
+                        <td>
+                            @for(int i = 0; i < trial.SeeAlsoLinkURL.Count; i++) {
+                                <span>
+                                    @if(i != 0) { <span>&nbsp;|&nbsp;</span> }
+                                    <a href="@trial.SeeAlsoLinkURL[i]">@trial.SeeAlsoLinkLabel[i]</a>
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
             }
         </tbody>
-    </table>
+    </table> 
 }
 
 @code {
-    private WeatherForecast[]? forecasts;
+    private IOrderedEnumerable<Trial>? trials = null;
+    int? trialCount;
+    [Parameter]
+    public string? query { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
-    }
+        List<Trial> trialList = null;
+        var moreToGet = 1;
+        var maxRank = 999;
+        var minRank = 1;
+    
+        if (query == null || query?.Trim() == "") return;
 
-    public class WeatherForecast
-    {
-        public DateOnly Date { get; set; }
+        // var annotationsByTrial = {};
+        // if (dataAnnotations != null) {
+        //  for (var i = 0; i < dataAnnotations.data.length; i++) {
+        //      annotationsByTrial[dataAnnotations.data[i].trial] = dataAnnotations.data[i];
+        //  }
+        // } 
 
-        public int TemperatureC { get; set; }
+        while (moreToGet > 0) {
+            var url = "https://clinicaltrials.gov/api/query/study_fields?expr=" + Uri.EscapeDataString(query) + "&fields=NCTId,Condition,LocationFacility,BriefTitle,StudyType,Phase,OverallStatus,WhyStopped,LeadSponsorName,InterventionName,StudyFirstPostDate,StartDate,StartDateType,LastUpdatePostDate,PrimaryCompletionDate,CompletionDate,SeeAlsoLinkURL,SeeAlsoLinkLabel&fmt=JSON&min_rnk="+minRank.ToString()+"&max_rnk="+maxRank.ToString();
 
-        public string? Summary { get; set; }
+            var data = await Http.GetFromJsonAsync<QueryRoot>(url);
 
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+            if (data != null && data.StudyFieldsResponse != null) { // && "StudyFields" in data.StudyFieldsResponse) {
+                trialCount = data.StudyFieldsResponse.NStudiesFound;
+                foreach (var trial in data.StudyFieldsResponse.StudyFields) {
+                    string? CompletionDate = null;
+                    if (trial.CompletionDate.Count != 0) {
+                        CompletionDate = trial.CompletionDate[0];
+                    } else if (trial.PrimaryCompletionDate.Count != 0) {
+                        CompletionDate = trial.PrimaryCompletionDate[0];
+                    } else if (trial.LastUpdatePostDate.Count != 0) {
+                        CompletionDate = trial.LastUpdatePostDate[0];
+                    }
+
+                    var lastPhase = trial.Phase.Count >= 1 ? trial.Phase[trial.Phase.Count-1] : "";
+                    var firstPhase = trial.Phase.Count >= 1 ? trial.Phase[0] : "";
+
+                    trial.PhaseInfo = Trial.GetPhaseInfo(lastPhase, firstPhase, trial.StudyType[0]);
+                    trial.Closed = trial.GetClosedInfo();
+                    trial.EndDate = CompletionDate;
+
+                    switch (trial.OverallStatus[0].ToString()) 
+                    {
+                        case "Enrolling by invitation":
+                        case "Not yet recruiting":
+                        case "Recruiting":
+                        case "Approved for marketing":
+                        case "Active, not recruiting":
+                            trial.OverallStatusStyle = "Active";
+                            break;
+                        case "Unknown status":
+                            trial.OverallStatusStyle = "Unknown";
+                            break;
+                        default:
+                            trial.OverallStatusStyle = trial.OverallStatus.Count > 0 ? trial.OverallStatus[0] : null;
+                            break;
+                    }
+
+                /*
+                if (trial.NCTId in annotationsByTrial) {
+                    trial.annotations = annotationsByTrial[trial.NCTId];
+                } 
+                */
+
+                    if (trialList == null) {
+                        trialList = new List<Trial>();
+                    }
+
+                    trialList.Add(trial);
+                }
+
+                if (trialCount > maxRank && maxRank < 5000)
+                {
+                    minRank = minRank + 999;
+                    maxRank = maxRank + 999;
+                    moreToGet = 1;
+                } else {
+                    moreToGet = 0;
+                }
+            }
+        }
+
+        trials = trialList?.OrderByDescending(i => i?.PhaseInfo?.Number);
     }
 }
