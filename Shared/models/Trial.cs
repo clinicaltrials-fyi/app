@@ -15,6 +15,11 @@
         public List<string>? StartDate { get; set; }
         public List<string>? StartDateType { get; set; }
         public List<string>? LastUpdatePostDate { get; set; }
+        public DateTime LastUpdated { 
+            get {
+                return DateTime.Parse(LastUpdatePostDate[0]);
+            }
+        }
         public List<string>? PrimaryCompletionDate { get; set; }
         public List<string>? CompletionDate { get; set; }
         public List<string>? SeeAlsoLinkURL { get; set; }

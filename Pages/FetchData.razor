@@ -21,16 +21,6 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>NCTId</th>
-                <th>Sponsor</th>
-                <th>Intervention</th>
-                <th>Title</th>
-                <th>Status</th>
-                <th>EndDate</th>
-                <th>LastUpdate</th>
-                <th>EnrollmentCount</th>
-                <th>See Also</th>
-                <th>Condition(s)</th>
             </tr>
         </thead>
         <tbody>
@@ -46,18 +36,39 @@ else
                         </td></tr>
                     }
 
-                    <tr>
-                        <td>@((MarkupString)link("https://beta.clinicaltrials.gov/study/@trial.NCTId[0]", @trial.NCTId[0]))</td>
-                        <td>@((MarkupString)link("/q/", Uri.EscapeDataString(trial.LeadSponsorName[0]), trial.LeadSponsorName[0], newTab:false))</td>
-                        <td>@((MarkupString)links("/q/", trial.InterventionName, trial.InterventionName, " | ", newTab:false))</td>
-                        <td>@first(trial.BriefTitle)</td>
-                        <td>@trial.OverallStatusStyle @all(trial.WhyStopped)</td>
-                        <td>@trial.EndDate</td>
-                        <td>@first(trial.LastUpdatePostDate)</td>
-                        <td>@first(trial.EnrollmentCount)</td>
-                        <td>@((MarkupString)links(trial.SeeAlsoLinkURL,trial.SeeAlsoLinkLabel, " | "))</td>
-                        <td>@((MarkupString)links("/q/", trial.Condition, trial.Condition, " | ", newTab:false))</td>
+                    <tr style=background:lightgrey;color:black>
+                        <td colspan="2">
+                            @((MarkupString)link("/q/", Uri.EscapeDataString(trial.LeadSponsorName[0]), trial.LeadSponsorName[0], newTab:false))
+                            - @((MarkupString)links("/q/", trial.InterventionName, trial.InterventionName, " | ", newTab:false))</td>
+                        <td style=font-size:12px>
+                            @((MarkupString)link("https://beta.clinicaltrials.gov/study/"+@trial.NCTId[0], @trial.NCTId[0]))
+                            <br/>@trial.LastUpdated.ToShortDateString()&nbsp;update
+                        </td>
                     </tr>
+                    <tr>
+                        <td colspan=2>
+                            <div style=margin-left:10px;font-size:12px>
+                                @first(trial.BriefTitle)
+                            </div>
+                        </td>
+                        <td style=font-size:12px>@trial.OverallStatusStyle @all(trial.WhyStopped)
+                            <br/>@trial.EndDate&nbsp;end
+                            <br/>@first(trial.EnrollmentCount) people
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan=3><div style=margin-left:10px;font-size:12px>
+                            Condition(s): @((MarkupString)links("/q/", trial.Condition, trial.Condition, " | ", newTab:false))
+                        </div></td>
+                    </tr>
+                    @if(trial.SeeAlsoLinkURL.Count>0)
+                    {
+                        <tr>
+                            <td colspan=3><div style=margin-left:10px;font-size:12px>
+                                See Also: @((MarkupString)links(trial.SeeAlsoLinkURL,trial.SeeAlsoLinkLabel, " | "))
+                            </div></td>
+                        </tr>
+                    }
                 }
             }
         </tbody>
@@ -177,7 +188,7 @@ else
 
                     trial.PhaseInfo = Trial.GetPhaseInfo(lastPhase, firstPhase, trial.StudyType[0]);
                     trial.Closed = trial.GetClosedInfo();
-                    trial.EndDate = CompletionDate;
+                    trial.EndDate = DateTime.Parse(CompletionDate).ToShortDateString();
 
                     switch (trial.OverallStatus[0].ToString()) 
                     {
@@ -220,6 +231,6 @@ else
             }
         }
 
-        trials = trialList?.OrderByDescending(i => i?.PhaseInfo?.Number);
+        trials = trialList?.OrderByDescending(i => i?.PhaseInfo?.Number).ThenByDescending(i => i.LastUpdated);
     }
 }
