@@ -105,7 +105,7 @@ else
                 retString += divider;
             } 
 
-            retString += link(urlPrefix + Uri.EscapeDataString(linkStrings[i]), labelStrings[i], newTab:newTab);                
+            retString += link(Uri.EscapeUriString(urlPrefix + linkStrings[i]), labelStrings[i], newTab:newTab);                
         }
 
         return retString;
