@@ -51,9 +51,10 @@ else
                                 @first(trial.BriefTitle)
                             </div>
                         </td>
-                        <td style=font-size:12px>@trial.OverallStatusStyle @all(trial.WhyStopped)
-                            <br/>@trial.EndDate&nbsp;end
-                            <br/>@first(trial.EnrollmentCount) people
+                        <td style=font-size:12px>
+                            @first(trial.EnrollmentCount) people
+                            <br/>@trial.OverallStatusStyle @all(trial.WhyStopped)
+                            <br/>until @trial.EndDate
                         </td>
                     </tr>
                     <tr>
