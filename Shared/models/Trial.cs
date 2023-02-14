@@ -20,7 +20,6 @@
         public List<string>? SeeAlsoLinkURL { get; set; }
         public List<string>? SeeAlsoLinkLabel { get; set; }
         public List<string>? EnrollmentCount { get; set; }
-        //public List<string>? Condition { get; set; }
         public string? EndDate { get; set; }
         public bool Closed { get; set; }
         public string? OverallStatusStyle { get; set; }

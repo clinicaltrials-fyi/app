@@ -1,14 +1,16 @@
 ﻿@page "/q/{query}"
 @inject HttpClient Http
 
-<PageTitle>Trials</PageTitle>
+<PageTitle>Trials - @query</PageTitle>
 
-<h1>Trials</h1>
+<h1>Trials - @query</h1>
 
 
 @if (trials == null && trialCount == null)
 {
 <p><em>...fetching data from clinicaltrials.gov...</em></p>
+} else if (trials == null && trialCount > 0) {
+<p><em>...fetching @trialCount trials from clinicaltrials.gov...</em></p>
 }
 else if (trialCount == 0) {
     <p>no results for query</p>
@@ -20,7 +22,6 @@ else
         <thead>
             <tr>
                 <th>NCTId</th>
-                <th>Condition</th>
                 <th>Sponsor</th>
                 <th>Intervention</th>
                 <th>Title</th>
@@ -29,6 +30,7 @@ else
                 <th>LastUpdate</th>
                 <th>EnrollmentCount</th>
                 <th>See Also</th>
+                <th>Condition(s)</th>
             </tr>
         </thead>
         <tbody>
@@ -45,23 +47,16 @@ else
                     }
 
                     <tr>
-                        <td><a target=_blank href="https://beta.clinicaltrials.gov/study/@trial.NCTId[0]">@trial.NCTId[0]</a></td>
-                        <td>@(trial.Condition.Count>0?trial.Condition[0]:"")</td>
-                        <td>@trial.LeadSponsorName[0]</td>
-                        <td>@(trial.InterventionName.Count > 0 ? trial.InterventionName[0] : "")</td>
-                        <td>@trial.BriefTitle[0]</td>
-                        <td>@trial.OverallStatusStyle @(trial.WhyStopped.Count > 0 ? ": " + trial.WhyStopped[0] : "")</td>
+                        <td>@((MarkupString)link("https://beta.clinicaltrials.gov/study/@trial.NCTId[0]", @trial.NCTId[0]))</td>
+                        <td>@((MarkupString)link("/q/", Uri.EscapeDataString(trial.LeadSponsorName[0]), trial.LeadSponsorName[0], newTab:false))</td>
+                        <td>@((MarkupString)links("/q/", trial.InterventionName, trial.InterventionName, " | ", newTab:false))</td>
+                        <td>@first(trial.BriefTitle)</td>
+                        <td>@trial.OverallStatusStyle @all(trial.WhyStopped)</td>
                         <td>@trial.EndDate</td>
-                        <td>@trial.LastUpdatePostDate[0]</td>
-                        <td>@(trial.EnrollmentCount.Count > 0 ? trial.EnrollmentCount[0] : "")</td>
-                        <td>
-                            @for(int i = 0; i < trial.SeeAlsoLinkURL.Count; i++) {
-                                <span>
-                                    @if(i != 0) { <span>&nbsp;|&nbsp;</span> }
-                                    <a target=_blank href="@trial.SeeAlsoLinkURL[i]">@trial.SeeAlsoLinkLabel[i]</a>
-                                </span>
-                            }
-                        </td>
+                        <td>@first(trial.LastUpdatePostDate)</td>
+                        <td>@first(trial.EnrollmentCount)</td>
+                        <td>@((MarkupString)links(trial.SeeAlsoLinkURL,trial.SeeAlsoLinkLabel, " | "))</td>
+                        <td>@((MarkupString)links("/q/", trial.Condition, trial.Condition, " | ", newTab:false))</td>
                     </tr>
                 }
             }
@@ -70,12 +65,80 @@ else
 }
 
 @code {
+    private string link(string linkUrl, string label, bool newTab = true) {
+        return link("", linkUrl, label, newTab);
+    }
+
+    private string link(string urlPrefix, string linkUrl, string label, bool newTab = true) {
+        return "<a " + (newTab?"target=_blank ":"") + "href=" + urlPrefix + linkUrl + ">" + label + "</a>";
+    }
+
+    private string links(string urlPrefix, List<string> linkStrings, List<string> labelStrings, string divider, bool newTab = true) {
+        string? retString = null;
+        for (int i = 0; i < linkStrings.Count; i++) {
+            if (retString != null) { 
+                retString += divider;
+            } 
+
+            retString += link(urlPrefix + Uri.EscapeDataString(linkStrings[i]), labelStrings[i], newTab:newTab);                
+        }
+
+        return retString;
+    }
+
+    private string links(List<string> linkStrings, List<string> labelStrings, string divider, bool newTab = true) {
+        return links("", linkStrings, labelStrings, divider, newTab);
+    }
+
+    private string first(List<string> strings) {
+        if (strings.Count > 0) {
+            return strings[0];
+        } else {
+            return "";
+        }
+    }
+
+    private string three(List<string> strings, string divider = " ") {
+        return all(strings, 3, divider);
+    }
+
+    private string all(List<string> strings, string divider = " ") {
+        return all(strings, -1, divider);
+    }
+
+    private string all(List<string> strings, int limit, string divider) {
+        int count = 0;
+        string? retString = null;
+        foreach (var str in strings) {
+            if (count++ == limit) {
+                retString += divider + "...";
+                break;
+            }
+
+            if (retString != null) {
+                retString += divider;
+            }
+
+            retString += str;
+        }
+
+        return retString;
+    }
+
     private IOrderedEnumerable<Trial>? trials = null;
     int? trialCount;
     [Parameter]
     public string? query { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
+    {
+        trials = null;
+        trialCount = null;
+        
+        await UpdateAsync();        
+    }
+
+    protected async Task UpdateAsync()
     {
         List<Trial> trialList = null;
         var moreToGet = 1;
