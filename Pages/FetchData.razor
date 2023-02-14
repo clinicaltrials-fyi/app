@@ -20,13 +20,15 @@ else
         <thead>
             <tr>
                 <th>NCTId</th>
+                <th>Condition</th>
                 <th>Sponsor</th>
                 <th>Intervention</th>
                 <th>Title</th>
                 <th>Status</th>
                 <th>EndDate</th>
                 <th>LastUpdate</th>
-                <th>SeeAlsoLinkURL</th>
+                <th>EnrollmentCount</th>
+                <th>See Also</th>
             </tr>
         </thead>
         <tbody>
@@ -37,24 +39,26 @@ else
                     if (lastGroup != trial?.PhaseInfo?.Name) {
                         lastGroup = trial?.PhaseInfo?.Name;
 
-                        <tr><td colspan=8 style=background:black;color:white;font-weight:bold>
+                        <tr><td colspan=11 style=background:black;color:white;font-weight:bold>
                             @trial?.PhaseInfo?.Name
                         </td></tr>
                     }
 
                     <tr>
-                        <td>@trial.NCTId[0]</td>
+                        <td><a target=_blank href="https://beta.clinicaltrials.gov/study/@trial.NCTId[0]">@trial.NCTId[0]</a></td>
+                        <td>@(trial.Condition.Count>0?trial.Condition[0]:"")</td>
                         <td>@trial.LeadSponsorName[0]</td>
                         <td>@(trial.InterventionName.Count > 0 ? trial.InterventionName[0] : "")</td>
                         <td>@trial.BriefTitle[0]</td>
                         <td>@trial.OverallStatusStyle @(trial.WhyStopped.Count > 0 ? ": " + trial.WhyStopped[0] : "")</td>
                         <td>@trial.EndDate</td>
                         <td>@trial.LastUpdatePostDate[0]</td>
+                        <td>@(trial.EnrollmentCount.Count > 0 ? trial.EnrollmentCount[0] : "")</td>
                         <td>
                             @for(int i = 0; i < trial.SeeAlsoLinkURL.Count; i++) {
                                 <span>
                                     @if(i != 0) { <span>&nbsp;|&nbsp;</span> }
-                                    <a href="@trial.SeeAlsoLinkURL[i]">@trial.SeeAlsoLinkLabel[i]</a>
+                                    <a target=_blank href="@trial.SeeAlsoLinkURL[i]">@trial.SeeAlsoLinkLabel[i]</a>
                                 </span>
                             }
                         </td>
@@ -88,7 +92,8 @@ else
         // } 
 
         while (moreToGet > 0) {
-            var url = "https://clinicaltrials.gov/api/query/study_fields?expr=" + Uri.EscapeDataString(query) + "&fields=NCTId,Condition,LocationFacility,BriefTitle,StudyType,Phase,OverallStatus,WhyStopped,LeadSponsorName,InterventionName,StudyFirstPostDate,StartDate,StartDateType,LastUpdatePostDate,PrimaryCompletionDate,CompletionDate,SeeAlsoLinkURL,SeeAlsoLinkLabel&fmt=JSON&min_rnk="+minRank.ToString()+"&max_rnk="+maxRank.ToString();
+            var url = "https://clinicaltrials.gov/api/query/study_fields?expr=" + Uri.EscapeDataString(query) 
+            + "&fields=NCTId,Condition,LocationFacility,BriefTitle,StudyType,Phase,OverallStatus,WhyStopped,LeadSponsorName,InterventionName,StudyFirstPostDate,StartDate,StartDateType,LastUpdatePostDate,PrimaryCompletionDate,CompletionDate,SeeAlsoLinkURL,SeeAlsoLinkLabel,EnrollmentCount&fmt=JSON&min_rnk="+minRank.ToString()+"&max_rnk="+maxRank.ToString();
 
             var data = await Http.GetFromJsonAsync<QueryRoot>(url);
 
