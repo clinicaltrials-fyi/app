@@ -15,18 +15,15 @@
 else if (trialCount == 0) {
     <p>no results for query</p>
 }
-else
+else if (trials != null)
 {
+    IOrderedEnumerable<Trial> trialList = trials;
     string? lastGroup = null;
     <table class="table">
-        <thead>
-            <tr>
-            </tr>
-        </thead>
         <tbody>
-            @foreach (var trial in trials)
+            @foreach (var trial in trialList)
             {
-                if (!trial.Closed)
+                if (trial != null && !trial.Closed)
                 {
                     if (lastGroup != trial?.PhaseInfo?.Name) {
                         lastGroup = trial?.PhaseInfo?.Name;
@@ -51,31 +48,31 @@ else
 
                     <tr style=background:lightgrey;color:black>
                         <td colspan="2">
-                            @((MarkupString)link("/q/", Uri.EscapeDataString(trial.LeadSponsorName[0]), trial.LeadSponsorName[0], newTab:false))
-                            - @((MarkupString)links("/q/", trial.InterventionName, trial.InterventionName, " | ", newTab:false))</td>
+                            @((MarkupString)link("/q/" + trial?.LeadSponsor, trial?.LeadSponsor, newTab:false))
+                            - @((MarkupString)links("/q/", trial?.InterventionName, trial?.InterventionName, " | ", newTab:false))</td>
                         <td style=font-size:12px>
-                            @((MarkupString)link("https://beta.clinicaltrials.gov/study/"+@trial.NCTId[0], @trial.NCTId[0]))
-                            <br/>@((MarkupString)link("https://clinicaltrials.gov/ct2/history/" + trial.NCTId[0] + "?C=Side-by-Side#StudyPageTop",trial.LastUpdated.ToShortDateString()))&nbsp;update
+                            @((MarkupString)link("https://beta.clinicaltrials.gov/study/"+@trial?.NCTIdValue, @trial?.NCTIdValue))
+                            <br/>@((MarkupString)link("https://clinicaltrials.gov/ct2/history/" + trial?.NCTIdValue + "?C=Side-by-Side#StudyPageTop",trial?.LastUpdated.ToShortDateString()))&nbsp;update
                         </td>
                     </tr>
                     <tr>
                         <td colspan=2>
                             <div style=margin-left:10px;font-size:12px>
-                                @first(trial.BriefTitle)
+                                @first(trial?.BriefTitle)
                             </div>
                         </td>
                         <td style=font-size:12px>
-                            @first(trial.EnrollmentCount) people
-                            <br/>@trial.OverallStatusStyle @all(trial.WhyStopped)
-                            <br/>until @trial.EndDate
+                            @first(trial?.EnrollmentCount) people
+                            <br/>@trial?.OverallStatusStyle @all(trial?.WhyStopped)
+                            <br/>until @trial?.EndDate
                         </td>
                     </tr>
                     <tr>
                         <td colspan=3><div style=margin-left:10px;font-size:12px>
-                            Condition(s): @((MarkupString)links("/q/", trial.Condition, trial.Condition, " | ", newTab:false))
+                            Condition(s): @((MarkupString)links("/q/", trial?.Condition, trial?.Condition, " | ", newTab:false))
                         </div></td>
                     </tr>
-                    @if(trial.SeeAlsoLinkURL.Count>0)
+                    @if(trial?.SeeAlsoLinkURL?.Count>0)
                     {
                         <tr>
                             <td colspan=3><div style=margin-left:10px;font-size:12px>
@@ -90,34 +87,44 @@ else
 }
 
 @code {
-    private string link(string linkUrl, string label, bool newTab = true) {
+    private string link(string? linkUrl, string? label, bool newTab = true) {
         return link("", linkUrl, label, newTab);
     }
 
-    private string link(string urlPrefix, string linkUrl, string label, bool newTab = true) {
+    private string link(string urlPrefix, string? linkUrl, string? label, bool newTab = true) {
         return "<a " + (newTab?"target=_blank ":"") + "href=" + urlPrefix + linkUrl + ">" + label + "</a>";
     }
 
-    private string links(string urlPrefix, List<string> linkStrings, List<string> labelStrings, string divider, bool newTab = true) {
-        string? retString = null;
-        for (int i = 0; i < linkStrings.Count; i++) {
-            if (retString != null) { 
-                retString += divider;
-            } 
+    private string links(string urlPrefix, List<string>? linkStrings, List<string>? labelStrings, string divider, bool newTab = true) {
+        string? retString = "";
+        if (linkStrings != null && labelStrings != null) {
+            for (int i = 0; i < linkStrings.Count; i++) {
+                if (retString != "") { 
+                    retString += divider;
+                } 
 
-            retString += link(Uri.EscapeUriString(urlPrefix + linkStrings[i]), labelStrings[i], newTab:newTab);                
+                retString += link(urlPrefix + linkStrings[i], labelStrings[i], newTab:newTab);                
+            }
         }
 
         return retString;
     }
 
-    private string links(List<string> linkStrings, List<string> labelStrings, string divider, bool newTab = true) {
+    private string links(List<string>? linkStrings, List<string>? labelStrings, string divider, bool newTab = true) {
         return links("", linkStrings, labelStrings, divider, newTab);
     }
 
-    private string first(List<string> strings) {
-        if (strings.Count > 0) {
+    private string first(List<string>? strings) {
+        if (strings != null && strings.Count > 0) {
             return strings[0];
+        } else {
+            return "";
+        }
+    }
+
+    private string last(List<string>? strings) {
+        if (strings != null && strings.Count > 0) {
+            return strings[strings.Count - 1];
         } else {
             return "";
         }
@@ -127,24 +134,26 @@ else
         return all(strings, 3, divider);
     }
 
-    private string all(List<string> strings, string divider = " ") {
+    private string all(List<string>? strings, string divider = " ") {
         return all(strings, -1, divider);
     }
 
-    private string all(List<string> strings, int limit, string divider) {
+    private string all(List<string>? strings, int limit, string divider) {
         int count = 0;
-        string? retString = null;
-        foreach (var str in strings) {
-            if (count++ == limit) {
-                retString += divider + "...";
-                break;
-            }
+        string? retString = "";
+        if (strings != null) {
+            foreach (var str in strings) {
+                if (count++ == limit) {
+                    retString += divider + "...";
+                    break;
+                }
 
-            if (retString != null) {
-                retString += divider;
-            }
+                if (retString != "") {
+                    retString += divider;
+                }
 
-            retString += str;
+                retString += str;
+            }
         }
 
         return retString;
@@ -165,22 +174,15 @@ else
 
     protected async Task UpdateAsync()
     {
-        List<Trial> trialList = null;
+        List<Trial>? trialList = null;
         var moreToGet = 1;
         var maxRank = 999;
         var minRank = 1;
     
         if (query == null || query?.Trim() == "") return;
 
-        // var annotationsByTrial = {};
-        // if (dataAnnotations != null) {
-        //  for (var i = 0; i < dataAnnotations.data.length; i++) {
-        //      annotationsByTrial[dataAnnotations.data[i].trial] = dataAnnotations.data[i];
-        //  }
-        // } 
-
         while (moreToGet > 0) {
-            var url = "https://clinicaltrials.gov/api/query/study_fields?expr=" + Uri.EscapeDataString(query) 
+            var url = "https://clinicaltrials.gov/api/query/study_fields?expr=" + Uri.EscapeDataString(query ?? "") 
             + "&fields=NCTId,Condition,LocationFacility,BriefTitle,StudyType,Phase,OverallStatus,WhyStopped,LeadSponsorName,InterventionName,StudyFirstPostDate,StartDate,StartDateType,LastUpdatePostDate,PrimaryCompletionDate,CompletionDate,SeeAlsoLinkURL,SeeAlsoLinkLabel,EnrollmentCount&fmt=JSON&min_rnk="+minRank.ToString()+"&max_rnk="+maxRank.ToString();
 
             var data = await Http.GetFromJsonAsync<QueryRoot>(url);
@@ -188,50 +190,49 @@ else
             if (data != null && data.StudyFieldsResponse != null) { // && "StudyFields" in data.StudyFieldsResponse) {
                 trialCount = data.StudyFieldsResponse.NStudiesFound;
                 foreach (var trial in data.StudyFieldsResponse.StudyFields) {
-                    string? CompletionDate = null;
-                    if (trial.CompletionDate.Count != 0) {
-                        CompletionDate = trial.CompletionDate[0];
-                    } else if (trial.PrimaryCompletionDate.Count != 0) {
-                        CompletionDate = trial.PrimaryCompletionDate[0];
-                    } else if (trial.LastUpdatePostDate.Count != 0) {
-                        CompletionDate = trial.LastUpdatePostDate[0];
+                    if (trial != null) {
+                        string? CompletionDate = null;
+                        if (trial.CompletionDate?.Count != 0) {
+                            CompletionDate = first(trial.CompletionDate);
+                        } else if (trial.PrimaryCompletionDate?.Count != 0) {
+                            CompletionDate = first(trial.PrimaryCompletionDate);
+                        } else if (trial.LastUpdatePostDate?.Count != 0) {
+                            CompletionDate = first(trial.LastUpdatePostDate);
+                        } else {
+                            throw new InvalidDataException("CompletionData not valid");
+                        }
+
+                        trial.EndDate = DateTime.Parse(CompletionDate).ToShortDateString();
+
+                        var lastPhase = last(trial.Phase);
+                        var firstPhase = first(trial.Phase);
+                        trial.PhaseInfo = Trial.GetPhaseInfo(lastPhase, firstPhase, first(trial.StudyType));
+
+                        trial.Closed = trial.GetClosedInfo();
+
+                        switch (first(trial.OverallStatus)) 
+                        {
+                            case "Enrolling by invitation":
+                            case "Not yet recruiting":
+                            case "Recruiting":
+                            case "Approved for marketing":
+                            case "Active, not recruiting":
+                                trial.OverallStatusStyle = "Active";
+                                break;
+                            case "Unknown status":
+                                trial.OverallStatusStyle = "Unknown";
+                                break;
+                            default:
+                                trial.OverallStatusStyle = first(trial.OverallStatus);
+                                break;
+                        }
+
+                        if (trialList == null) {
+                            trialList = new List<Trial>();
+                        }
+
+                        trialList.Add(trial);
                     }
-
-                    var lastPhase = trial.Phase.Count >= 1 ? trial.Phase[trial.Phase.Count-1] : "";
-                    var firstPhase = trial.Phase.Count >= 1 ? trial.Phase[0] : "";
-
-                    trial.PhaseInfo = Trial.GetPhaseInfo(lastPhase, firstPhase, trial.StudyType[0]);
-                    trial.Closed = trial.GetClosedInfo();
-                    trial.EndDate = DateTime.Parse(CompletionDate).ToShortDateString();
-
-                    switch (trial.OverallStatus[0].ToString()) 
-                    {
-                        case "Enrolling by invitation":
-                        case "Not yet recruiting":
-                        case "Recruiting":
-                        case "Approved for marketing":
-                        case "Active, not recruiting":
-                            trial.OverallStatusStyle = "Active";
-                            break;
-                        case "Unknown status":
-                            trial.OverallStatusStyle = "Unknown";
-                            break;
-                        default:
-                            trial.OverallStatusStyle = trial.OverallStatus.Count > 0 ? trial.OverallStatus[0] : null;
-                            break;
-                    }
-
-                /*
-                if (trial.NCTId in annotationsByTrial) {
-                    trial.annotations = annotationsByTrial[trial.NCTId];
-                } 
-                */
-
-                    if (trialList == null) {
-                        trialList = new List<Trial>();
-                    }
-
-                    trialList.Add(trial);
                 }
 
                 if (trialCount > maxRank && maxRank < 5000)

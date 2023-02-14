@@ -2,6 +2,15 @@
     {
         public int Rank { get; set; }
         public List<string>? NCTId { get; set; }
+        public string NCTIdValue {
+            get {
+                if (NCTId?.Count > 0) {
+                    return NCTId[0];
+                } else {
+                    throw new InvalidDataException("NCTId not set");
+                }
+            }
+        }
         public List<string>? Condition { get; set; }
         public List<string>? LocationFacility { get; set; }
         public List<string>? BriefTitle { get; set; }
@@ -10,6 +19,15 @@
         public List<string>? OverallStatus { get; set; }
         public List<string>? WhyStopped { get; set; }
         public List<string>? LeadSponsorName { get; set; }
+        public string LeadSponsor {
+            get {
+                if (LeadSponsorName?.Count > 0) {
+                    return LeadSponsorName[0];
+                } else {
+                    throw new InvalidDataException("LeadSponsorName not set");
+                }
+            }
+        }
         public List<string>? InterventionName { get; set; }
         public List<string>? StudyFirstPostDate { get; set; }
         public List<string>? StartDate { get; set; }
@@ -17,7 +35,11 @@
         public List<string>? LastUpdatePostDate { get; set; }
         public DateTime LastUpdated { 
             get {
-                return DateTime.Parse(LastUpdatePostDate[0]);
+                if (LastUpdatePostDate?.Count > 0) {
+                    return DateTime.Parse(LastUpdatePostDate[0]);
+                } else {
+                    throw new InvalidDataException("LastUpdatePostDate not set");
+                }
             }
         }
         public List<string>? PrimaryCompletionDate { get; set; }

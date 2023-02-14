@@ -1,4 +1,4 @@
 public class QueryRoot
 {
-    public QueryResponse StudyFieldsResponse { get; set; }
+    public QueryResponse? StudyFieldsResponse { get; set; }
 }
