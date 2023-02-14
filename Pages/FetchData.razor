@@ -31,9 +31,22 @@ else
                     if (lastGroup != trial?.PhaseInfo?.Name) {
                         lastGroup = trial?.PhaseInfo?.Name;
 
-                        <tr><td colspan=11 style=background:black;color:white;font-weight:bold>
-                            @trial?.PhaseInfo?.Name
-                        </td></tr>
+                        <tr>
+                            @if(trial?.PhaseInfo?.Name == "Not Applicable")
+                            {
+                                <td colspan=11 style=background:black;color:white;font-weight:bold>
+                                    Trials of Devices or Behavioral Interventions
+                                </td>
+                            } else if(trial?.PhaseInfo?.Name == "Observational") {
+                                <td colspan=11 style=background:black;color:white;font-weight:bold>
+                                    Observational Studies
+                                </td>
+                            } else {
+                                <td colspan=11 style=background:black;color:white;font-weight:bold>
+                                    @trial?.PhaseInfo?.Name Trials
+                                </td>
+                            }
+                        </tr>
                     }
 
                     <tr style=background:lightgrey;color:black>
@@ -42,7 +55,7 @@ else
                             - @((MarkupString)links("/q/", trial.InterventionName, trial.InterventionName, " | ", newTab:false))</td>
                         <td style=font-size:12px>
                             @((MarkupString)link("https://beta.clinicaltrials.gov/study/"+@trial.NCTId[0], @trial.NCTId[0]))
-                            <br/>@trial.LastUpdated.ToShortDateString()&nbsp;update
+                            <br/>@((MarkupString)link("https://clinicaltrials.gov/ct2/history/" + trial.NCTId[0] + "?C=Side-by-Side#StudyPageTop",trial.LastUpdated.ToShortDateString()))&nbsp;update
                         </td>
                     </tr>
                     <tr>
