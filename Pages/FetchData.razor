@@ -48,18 +48,27 @@ else if (trials != null)
 
                     <tr style=background:lightgrey;color:black>
                         <td colspan="2">
-                            @((MarkupString)link("/q/" + trial?.LeadSponsor, trial?.LeadSponsor, newTab:false))
+                            @((MarkupString)link("/q/", trial?.LeadSponsor, trial?.LeadSponsor, newTab:false))
                             - @((MarkupString)links("/q/", trial?.InterventionName, trial?.InterventionName, " | ", newTab:false))</td>
                         <td style=font-size:12px>
-                            @((MarkupString)link("https://beta.clinicaltrials.gov/study/"+@trial?.NCTIdValue, @trial?.NCTIdValue))
-                            <br/>@((MarkupString)link("https://clinicaltrials.gov/ct2/history/" + trial?.NCTIdValue + "?C=Side-by-Side#StudyPageTop",trial?.LastUpdated.ToShortDateString()))&nbsp;update
+                            @((MarkupString)link("https://beta.clinicaltrials.gov/study/", @trial?.NCTIdValue, @trial?.NCTIdValue))
+                            <br/>@((MarkupString)link("https://clinicaltrials.gov/ct2/history/",  trial?.NCTIdValue + "?C=Side-by-Side#StudyPageTop",trial?.LastUpdated.ToShortDateString()))&nbsp;update
                         </td>
                     </tr>
                     <tr>
                         <td colspan=2>
-                            <div style=margin-left:10px;font-size:12px>
+                            <div style=margin-left:10px;font-size:12px;font-weight:bold>
                                 @first(trial?.BriefTitle)
                             </div>
+                            <div style=margin-left:10px;font-size:12px>
+                                Condition(s): @((MarkupString)links("/q/", trial?.Condition, trial?.Condition, " | ", newTab:false))
+                            </div>
+                            @if(trial?.SeeAlsoLinkURL?.Count>0)
+                            {
+                                <div style=margin-left:10px;font-size:12px>
+                                    See Also: @((MarkupString)links(trial.SeeAlsoLinkURL, trial.SeeAlsoLinkLabel, " | "))
+                                </div>
+                            }
                         </td>
                         <td style=font-size:12px>
                             @first(trial?.EnrollmentCount) people
@@ -67,19 +76,6 @@ else if (trials != null)
                             <br/>until @trial?.EndDate
                         </td>
                     </tr>
-                    <tr>
-                        <td colspan=3><div style=margin-left:10px;font-size:12px>
-                            Condition(s): @((MarkupString)links("/q/", trial?.Condition, trial?.Condition, " | ", newTab:false))
-                        </div></td>
-                    </tr>
-                    @if(trial?.SeeAlsoLinkURL?.Count>0)
-                    {
-                        <tr>
-                            <td colspan=3><div style=margin-left:10px;font-size:12px>
-                                See Also: @((MarkupString)links(trial.SeeAlsoLinkURL,trial.SeeAlsoLinkLabel, " | "))
-                            </div></td>
-                        </tr>
-                    }
                 }
             }
         </tbody>
@@ -92,7 +88,7 @@ else if (trials != null)
     }
 
     private string link(string urlPrefix, string? linkUrl, string? label, bool newTab = true) {
-        return "<a " + (newTab?"target=_blank ":"") + "href=" + urlPrefix + linkUrl + ">" + label + "</a>";
+        return "<a " + (newTab?"target=_blank ":"") + "href=" + urlPrefix + Uri.EscapeDataString(linkUrl) + ">" + label + "</a>";
     }
 
     private string links(string urlPrefix, List<string>? linkStrings, List<string>? labelStrings, string divider, bool newTab = true) {
@@ -103,7 +99,7 @@ else if (trials != null)
                     retString += divider;
                 } 
 
-                retString += link(urlPrefix + linkStrings[i], labelStrings[i], newTab:newTab);                
+                retString += link(urlPrefix, linkStrings[i], labelStrings[i], newTab:newTab);                
             }
         }
 
@@ -111,7 +107,18 @@ else if (trials != null)
     }
 
     private string links(List<string>? linkStrings, List<string>? labelStrings, string divider, bool newTab = true) {
-        return links("", linkStrings, labelStrings, divider, newTab);
+        string? retString = "";
+        if (linkStrings != null && labelStrings != null) {
+            for (int i = 0; i < linkStrings.Count; i++) {
+                if (retString != "") { 
+                    retString += divider;
+                } 
+
+                retString += link(linkStrings[i], "", labelStrings[i], newTab:newTab);                
+            }
+        }
+
+        return retString;
     }
 
     private string first(List<string>? strings) {
