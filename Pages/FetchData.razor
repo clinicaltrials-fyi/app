@@ -52,7 +52,7 @@ else if (trials != null)
                             - @((MarkupString)links("/q/", trial?.InterventionName, trial?.InterventionName, " | ", newTab:false))</td>
                         <td style=font-size:12px>
                             @((MarkupString)link("https://beta.clinicaltrials.gov/study/", @trial?.NCTIdValue, @trial?.NCTIdValue))
-                            <br/>@((MarkupString)link("https://clinicaltrials.gov/ct2/history/",  trial?.NCTIdValue + "?C=Side-by-Side#StudyPageTop",trial?.LastUpdated.ToShortDateString()))&nbsp;update
+                            <br/>@((MarkupString)link("https://clinicaltrials.gov/ct2/history/",  trial?.NCTIdValue,trial?.LastUpdated.ToShortDateString()))&nbsp;update
                         </td>
                     </tr>
                     <tr>
