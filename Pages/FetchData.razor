@@ -48,11 +48,18 @@ else if (trials != null)
 
                     <tr style=background:lightgrey;color:black>
                         <td colspan="2">
-                            @((MarkupString)link("/q/", trial?.LeadSponsor, trial?.LeadSponsor, newTab:false))
-                            - @((MarkupString)links("/q/", trial?.InterventionName, trial?.InterventionName, " | ", newTab:false))</td>
+                            <div>
+                                @((MarkupString)link("/q/", trial?.LeadSponsor, trial?.LeadSponsor, newTab:false))
+                                - @((MarkupString)links("/q/", trial?.InterventionName, trial?.InterventionName, " | ", newTab:false))
+                            </div>
+                            <div style=margin-left:10px;font-size:12px>
+                                Trial Details: @((MarkupString)link("https://beta.clinicaltrials.gov/study/", @trial?.NCTIdValue, @trial?.NCTIdValue))&nbsp;(CT.gov) | @((MarkupString)link("https://clinicaltrials.gov/ct2/history/" + trial?.NCTIdValue,  "Changes"))&nbsp;(CT.gov)
+                            </div>
+                        </td>
                         <td style=font-size:12px>
-                            @((MarkupString)link("https://beta.clinicaltrials.gov/study/", @trial?.NCTIdValue, @trial?.NCTIdValue))
-                            <br/>@((MarkupString)link("https://clinicaltrials.gov/ct2/history/",  trial?.NCTIdValue,trial?.LastUpdated.ToShortDateString()))&nbsp;update
+                            @trial?.OverallStatusStyle @all(trial?.WhyStopped)
+                            <br/>
+                            Updated:&nbsp;@(trial?.LastUpdated.ToShortDateString())
                         </td>
                     </tr>
                     <tr>
@@ -72,7 +79,6 @@ else if (trials != null)
                         </td>
                         <td style=font-size:12px>
                             @first(trial?.EnrollmentCount) people
-                            <br/>@trial?.OverallStatusStyle @all(trial?.WhyStopped)
                             <br/>until @trial?.EndDate
                         </td>
                     </tr>
