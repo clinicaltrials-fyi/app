@@ -9,13 +9,12 @@
 </h1>
 <h3>
     <input type=text @onkeydown=KeyDown placeholder='terms to find' value="@QueryInfo.Terms" 
-            @onchange="@((args) => { QueryInfo.Terms = args.Value.ToString(); })"/>
+            @oninput="@((args) => { QueryInfo.Terms = args.Value.ToString(); })" />
     <input type=button value="Go" @onclick=doSearch />
 </h3>
 
 @if (query == null) 
 {
-    <p>type terms to find</p>
 } else if (trials == null && trialCount == null)
 {
     <br/>
@@ -111,6 +110,11 @@ else if (trials != null)
     }
 
     private void doSearch() {
+        if (string.IsNullOrEmpty(QueryInfo.Terms.Trim()))
+        {
+            return;
+        }
+
         query = QueryInfo.Terms;
         NavManager.NavigateTo("/q/" + query);
     }
