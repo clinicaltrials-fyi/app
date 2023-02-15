@@ -1,16 +1,28 @@
-﻿@page "/q/{query}"
+﻿@page "/"
+@page "/q/{query}"
 @inject HttpClient Http
-
+@inject NavigationManager NavManager
 <PageTitle>Trials - @query</PageTitle>
 
-<h1>Trials - @query</h1>
+<h1>
+    ClinicalTrials search:<br/>
+</h1>
+<h3>
+    <input type=text @onkeydown=KeyDown placeholder='terms to find' value="@QueryInfo.Terms" 
+            @onchange="@((args) => { QueryInfo.Terms = args.Value.ToString(); })"/>
+    <input type=button value="Go" @onclick=doSearch />
+</h3>
 
-
-@if (trials == null && trialCount == null)
+@if (query == null) 
 {
-<p><em>...fetching data from clinicaltrials.gov...</em></p>
+    <p>type terms to find</p>
+} else if (trials == null && trialCount == null)
+{
+    <br/>
+    <br/>
+    <p><em>...fetching data from clinicaltrials.gov...</em></p>
 } else if (trials == null && trialCount > 0) {
-<p><em>...fetching @trialCount trials from clinicaltrials.gov...</em></p>
+    <p><em>...fetching @trialCount trials from clinicaltrials.gov...</em></p>
 }
 else if (trialCount == 0) {
     <p>no results for query</p>
@@ -89,6 +101,20 @@ else if (trials != null)
 }
 
 @code {
+
+    private void KeyDown(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            doSearch();
+        }
+    }
+
+    private void doSearch() {
+        query = QueryInfo.Terms;
+        NavManager.NavigateTo("/q/" + query);
+    }
+
     private string link(string? linkUrl, string? label, bool newTab = true) {
         return link("", linkUrl, label, newTab);
     }
@@ -176,6 +202,7 @@ else if (trials != null)
     int? trialCount;
     [Parameter]
     public string? query { get; set; }
+    private QueryInfo QueryInfo { get; set; } = new();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -192,6 +219,7 @@ else if (trials != null)
         var maxRank = 999;
         var minRank = 1;
     
+        QueryInfo.Terms = query;
         if (query == null || query?.Trim() == "") return;
 
         while (moreToGet > 0) {
