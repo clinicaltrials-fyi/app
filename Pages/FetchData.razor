@@ -94,7 +94,7 @@ else if (trialList != null)
                             </div>
                         </td>
                         <td style=font-size:12px>
-                            @first(trial?.OverallStatus) @all(trial?.WhyStopped)
+                            <div class=@("status " + trial?.OverallStatusStyle)>@first(trial?.OverallStatus)</div>
                             <br/>
                             Updated:&nbsp;@(trial?.LastUpdated.ToShortDateString())
                         </td>
@@ -107,6 +107,13 @@ else if (trialList != null)
                             <div style=margin-left:10px;font-size:12px>
                                 Condition(s): @((MarkupString)links("/q/", trial?.Condition, trial?.Condition, " | ", newTab:false))
                             </div>
+                            @if(!string.IsNullOrEmpty(first(trial?.WhyStopped))) 
+                            {
+                                <div style=margin-left:10px;font-size:12px>
+                                    Why stopped: @all(trial?.WhyStopped)
+                                </div>
+                            }
+
                             @if(trial?.SeeAlsoLinkURL?.Count>0)
                             {
                                 <div style=margin-left:10px;font-size:12px>
