@@ -4,14 +4,18 @@
 @inject NavigationManager NavManager
 <PageTitle>Trials - @query</PageTitle>
 
-<h1>
-    ClinicalTrials search:<br/>
-</h1>
 <h3>
+    ClinicalTrials search:<br/>
+</h3>
+<h4>
     <input type=text @onkeydown=KeyDown placeholder='terms to find' value="@QueryInfo.Terms" 
             @oninput="@((args) => { QueryInfo.Terms = args.Value.ToString(); })" />
     <input type=button value="Go" @onclick=doSearch />
-</h3>
+</h4>
+<h6>
+    <label for=sortOrder>Sort by</label> <InputSelect @bind-Value=QueryInfo.SortOrder><option>Phase</option><option>Sponsor</option></InputSelect>
+    <InputCheckbox id=showClosed @bind-Value=QueryInfo.ShowClosed /> <label for=showClosed>Show Closed Trials</label>
+</h6>
 
 @if (query == null) 
 {
@@ -20,41 +24,63 @@
     <br/>
     <br/>
     <p><em>...fetching data from clinicaltrials.gov...</em></p>
-} else if (trials == null && trialCount > 0) {
-    <p><em>...fetching @trialCount trials from clinicaltrials.gov...</em></p>
-}
-else if (trialCount == 0) {
+} else if (trialCount == 0) {
     <p>no results for query</p>
 }
-else if (trials != null)
+else if (trialList != null)
 {
-    IOrderedEnumerable<Trial> trialList = trials;
+    IOrderedEnumerable<Trial> trialList2 = null;
+    switch (QueryInfo.SortOrder) {
+        case "Sponsor":
+            trialList2 = trialList?.OrderBy(i => i?.LeadSponsor).ThenByDescending(i => i?.PhaseInfo?.Number);
+            break;
+        case "Phase":
+        default:
+            trialList2 = trialList?.OrderByDescending(i => i?.PhaseInfo?.Number).ThenByDescending(i => i.LastUpdated);
+            break;
+    }
     string? lastGroup = null;
     <table class="table">
         <tbody>
-            @foreach (var trial in trialList)
+            @foreach (var trial in trialList2)
             {
-                if (trial != null && !trial.Closed)
+                if (trial != null && (QueryInfo.ShowClosed || !trial.Closed))
                 {
-                    if (lastGroup != trial?.PhaseInfo?.Name) {
-                        lastGroup = trial?.PhaseInfo?.Name;
+                    switch (QueryInfo.SortOrder) {
+                        case "Phase":
+                        default:
+                            if (lastGroup != trial?.PhaseInfo?.Name) {
+                                lastGroup = trial?.PhaseInfo?.Name;
 
-                        <tr>
-                            @if(trial?.PhaseInfo?.Name == "Not Applicable")
-                            {
-                                <td colspan=11 style=background:black;color:white;font-weight:bold>
-                                    Trials of Devices or Behavioral Interventions
-                                </td>
-                            } else if(trial?.PhaseInfo?.Name == "Observational") {
-                                <td colspan=11 style=background:black;color:white;font-weight:bold>
-                                    Observational Studies
-                                </td>
-                            } else {
-                                <td colspan=11 style=background:black;color:white;font-weight:bold>
-                                    @trial?.PhaseInfo?.Name Trials
-                                </td>
+                                <tr>
+                                    @if(trial?.PhaseInfo?.Name == "Not Applicable")
+                                    {
+                                        <td colspan=11 style=background:black;color:white;font-weight:bold>
+                                            Trials of Devices or Behavioral Interventions
+                                        </td>
+                                    } else if(trial?.PhaseInfo?.Name == "Observational") {
+                                        <td colspan=11 style=background:black;color:white;font-weight:bold>
+                                            Observational Studies
+                                        </td>
+                                    } else {
+                                        <td colspan=11 style=background:black;color:white;font-weight:bold>
+                                            @trial?.PhaseInfo?.Name Trials
+                                        </td>
+                                    }
+                                </tr>
                             }
-                        </tr>
+                            break;
+                        case "Sponsor":
+                            if (lastGroup != trial?.LeadSponsor) {
+                                lastGroup = trial?.LeadSponsor;
+
+                                <tr>
+                                    <td colspan=11 style=background:black;color:white;font-weight:bold>
+                                        @trial?.LeadSponsor
+                                    </td>
+                                </tr>
+                            }
+                            break;
                     }
 
                     <tr style=background:lightgrey;color:black>
@@ -68,7 +94,7 @@ else if (trials != null)
                             </div>
                         </td>
                         <td style=font-size:12px>
-                            @trial?.OverallStatusStyle @all(trial?.WhyStopped)
+                            @first(trial?.OverallStatus) @all(trial?.WhyStopped)
                             <br/>
                             Updated:&nbsp;@(trial?.LastUpdated.ToShortDateString())
                         </td>
@@ -202,6 +228,7 @@ else if (trials != null)
         return retString;
     }
 
+    private List<Trial>? trialList = null;
     private IOrderedEnumerable<Trial>? trials = null;
     int? trialCount;
     [Parameter]
@@ -218,7 +245,6 @@ else if (trials != null)
 
     protected async Task UpdateAsync()
     {
-        List<Trial>? trialList = null;
         var moreToGet = 1;
         var maxRank = 999;
         var minRank = 1;
@@ -290,7 +316,5 @@ else if (trials != null)
                 }
             }
         }
-
-        trials = trialList?.OrderByDescending(i => i?.PhaseInfo?.Number).ThenByDescending(i => i.LastUpdated);
     }
 }
