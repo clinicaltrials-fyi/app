@@ -86,7 +86,11 @@ else if (trialList != null)
                     <tr style=background:lightgrey;color:black>
                         <td colspan="2">
                             <div>
-                                @((MarkupString)link("/q/", trial?.LeadSponsor, trial?.LeadSponsor, newTab:false))
+                                @if(QueryInfo.SortOrder=="Phase"){
+                                    @((MarkupString)link("/q/", trial?.LeadSponsor, trial?.LeadSponsor, newTab:false))
+                                } else if (QueryInfo.SortOrder=="Sponsor") {
+                                    @trial?.PhaseInfo?.Name
+                                }
                                 - @((MarkupString)links("/q/", trial?.InterventionName, trial?.InterventionName, " | ", newTab:false))
                             </div>
                             <div style=margin-left:10px;font-size:12px>
