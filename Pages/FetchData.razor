@@ -110,7 +110,7 @@ else if (trials != null)
     }
 
     private void doSearch() {
-        if (string.IsNullOrEmpty(QueryInfo.Terms.Trim()))
+        if (QueryInfo.Terms == null || string.IsNullOrEmpty(QueryInfo.Terms.Trim()))
         {
             return;
         }
@@ -124,7 +124,7 @@ else if (trials != null)
     }
 
     private string link(string urlPrefix, string? linkUrl, string? label, bool newTab = true) {
-        return "<a " + (newTab?"target=_blank ":"") + "href=" + urlPrefix + Uri.EscapeDataString(linkUrl) + ">" + label + "</a>";
+        return "<a " + (newTab?"target=_blank ":"") + "href=" + urlPrefix + Uri.EscapeDataString(linkUrl ?? "") + ">" + label + "</a>";
     }
 
     private string links(string urlPrefix, List<string>? linkStrings, List<string>? labelStrings, string divider, bool newTab = true) {
