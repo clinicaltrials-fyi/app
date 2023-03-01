@@ -2,7 +2,7 @@
 @page "/q/{query}"
 @inject HttpClient Http
 @inject NavigationManager NavManager
-<PageTitle>Trials - @query</PageTitle>
+<PageTitle>@(query != null ? "Trials - "+@query : "clinicaltrials.fyi")</PageTitle>
 
 <h3>
     ClinicalTrials search:<br/>
@@ -94,7 +94,7 @@ else if (trialList != null)
                                 - @((MarkupString)links("/q/", trial?.InterventionName, trial?.InterventionName, " | ", newTab:false))
                             </div>
                             <div style=margin-left:10px;font-size:12px>
-                                Trial Details: @((MarkupString)link("https://beta.clinicaltrials.gov/study/", @trial?.NCTIdValue, @trial?.NCTIdValue))&nbsp;(CT.gov) | @((MarkupString)link("https://clinicaltrials.gov/ct2/history/" + trial?.NCTIdValue,  "Changes"))&nbsp;(CT.gov)
+                                Trial Details: @((MarkupString)link("https://beta.clinicaltrials.gov/study/", @trial?.NCTIdValue, @trial?.NCTIdValue))&nbsp;(CT.gov) | @((MarkupString)link("https://clinicaltrials.gov/ct2/history/", trial?.NCTIdValue,  "Changes"))&nbsp;(CT.gov)
                             </div>
                         </td>
                         <td style=font-size:12px>
