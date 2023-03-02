@@ -5,7 +5,7 @@
 <PageTitle>@(query != null ? "Trials - "+@query : "clinicaltrials.fyi")</PageTitle>
 
 <h3>
-    ClinicalTrials search:<br/>
+    <span>ClinicalTrials search:</span><a style=float:right;font-size:14px href="/about">About</a>
 </h3>
 <h4>
     <input type=text @onkeydown=KeyDown placeholder='terms to find' value="@QueryInfo.Terms" 
@@ -97,10 +97,9 @@ else if (trialList != null)
                                 Trial Details: @((MarkupString)link("https://beta.clinicaltrials.gov/study/", @trial?.NCTIdValue, @trial?.NCTIdValue))&nbsp;(CT.gov) | @((MarkupString)link("https://clinicaltrials.gov/ct2/history/", trial?.NCTIdValue,  "Changes"))&nbsp;(CT.gov)
                             </div>
                         </td>
-                        <td style=font-size:12px>
-                            <div class=@("status " + trial?.OverallStatusStyle)>@first(trial?.OverallStatus)</div>
-                            <br/>
-                            Updated:&nbsp;@(trial?.LastUpdated.ToShortDateString())
+                        <td style=font-size:12px class=box>
+                            <div style=text-align:right class=@("status " + trial?.OverallStatusStyle)>@first(trial?.OverallStatus)</div>
+                            <div class= style=text-align:right>Updated:&nbsp;@(trial?.LastUpdated.ToShortDateString())</div>
                         </td>
                     </tr>
                     <tr>

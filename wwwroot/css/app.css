@@ -136,9 +136,19 @@ a:active {
 .Withdrawn {
     background-color: darkslategrey;
 }
+.box {
+    display: flex;
+    justify-content: space-between;
+}
+
+.text-right {
+    text-align: right;
+}
+
 .status {
     float: right;
     padding-left: 2px;
+    text-align: right;
     font-size: calc(3px + vmin);
     color:white;
-  }
+}
