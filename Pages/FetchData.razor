@@ -264,7 +264,7 @@ else if (trialList != null)
         if (query == null || query?.Trim() == "") return;
 
         while (moreToGet > 0) {
-            var url = "https://clinicaltrials.gov/api/query/study_fields?expr=" + Uri.EscapeDataString(query ?? "") 
+            var url = "https://classic.clinicaltrials.gov/api/query/study_fields?expr=" + Uri.EscapeDataString(query ?? "") 
             + "&fields=NCTId,Condition,LocationFacility,BriefTitle,StudyType,Phase,OverallStatus,WhyStopped,LeadSponsorName,InterventionName,StudyFirstPostDate,StartDate,StartDateType,LastUpdatePostDate,PrimaryCompletionDate,CompletionDate,SeeAlsoLinkURL,SeeAlsoLinkLabel,EnrollmentCount&fmt=JSON&min_rnk="+minRank.ToString()+"&max_rnk="+maxRank.ToString();
 
             var data = await Http.GetFromJsonAsync<QueryRoot>(url);
