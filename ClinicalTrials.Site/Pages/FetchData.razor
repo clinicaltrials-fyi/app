@@ -1,0 +1,331 @@
+﻿@page "/"
+@page "/q/{query}"
+@inject HttpClient Http
+@inject NavigationManager NavManager
+<PageTitle>@(query != null ? "Trials - "+@query : "clinicaltrials.fyi")</PageTitle>
+
+<h3>
+    <span>ClinicalTrials search:</span><a style=float:right;font-size:14px href="/about">About</a>
+</h3>
+<h4>
+    <input type=text @onkeydown=KeyDown placeholder='terms to find' value="@QueryInfo.Terms" 
+            @oninput="@((args) => { QueryInfo.Terms = args.Value.ToString(); })" />
+    <input type=button value="Go" @onclick=doSearch />
+</h4>
+<h6>
+    <label for=sortOrder>Sort by</label> <InputSelect @bind-Value=QueryInfo.SortOrder><option>Phase</option><option>Sponsor</option></InputSelect>
+    <InputCheckbox id=showClosed @bind-Value=QueryInfo.ShowClosed /> <label for=showClosed>Show Closed Trials</label>
+</h6>
+
+@if (query == null) 
+{
+} else if (trials == null && trialCount == null)
+{
+    <br/>
+    <br/>
+    <p><em>...fetching data from clinicaltrials.gov...</em></p>
+} else if (trialCount == 0) {
+    <p>no results for query</p>
+}
+else if (trialList != null)
+{
+    IOrderedEnumerable<Trial> trialList2 = null;
+    switch (QueryInfo.SortOrder) {
+        case "Sponsor":
+            trialList2 = trialList?.OrderBy(i => i?.LeadSponsor).ThenByDescending(i => i?.PhaseInfo?.Number);
+            break;
+        case "Phase":
+        default:
+            trialList2 = trialList?.OrderByDescending(i => i?.PhaseInfo?.Number).ThenByDescending(i => i.LastUpdated);
+            break;
+    }
+    string? lastGroup = null;
+    <table class="table">
+        <tbody>
+            @foreach (var trial in trialList2)
+            {
+                if (trial != null && (QueryInfo.ShowClosed || !trial.Closed))
+                {
+                    switch (QueryInfo.SortOrder) {
+                        case "Phase":
+                        default:
+                            if (lastGroup != trial?.PhaseInfo?.Name) {
+                                lastGroup = trial?.PhaseInfo?.Name;
+
+                                <tr>
+                                    @if(trial?.PhaseInfo?.Name == "Not Applicable")
+                                    {
+                                        <td colspan=11 style=background:black;color:white;font-weight:bold>
+                                            Trials of Devices or Behavioral Interventions
+                                        </td>
+                                    } else if(trial?.PhaseInfo?.Name == "Observational") {
+                                        <td colspan=11 style=background:black;color:white;font-weight:bold>
+                                            Observational Studies
+                                        </td>
+                                    } else {
+                                        <td colspan=11 style=background:black;color:white;font-weight:bold>
+                                            @trial?.PhaseInfo?.Name Trials
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                            break;
+                        case "Sponsor":
+                            if (lastGroup != trial?.LeadSponsor) {
+                                lastGroup = trial?.LeadSponsor;
+
+                                <tr>
+                                    <td colspan=11 style=background:black;color:white;font-weight:bold>
+                                        @trial?.LeadSponsor
+                                    </td>
+                                </tr>
+                            }
+                            break;
+                    }
+
+                    <tr style=background:lightgrey;color:black>
+                        <td colspan="2">
+                            <div>
+                                @if(QueryInfo.SortOrder=="Phase"){
+                                    @((MarkupString)link("/q/", trial?.LeadSponsor, trial?.LeadSponsor, newTab:false))
+                                } else if (QueryInfo.SortOrder=="Sponsor") {
+                                    @trial?.PhaseInfo?.Name
+                                }
+                                - @((MarkupString)links("/q/", trial?.InterventionName, trial?.InterventionName, " | ", newTab:false))
+                            </div>
+                            <div style=margin-left:10px;font-size:12px>
+                                Trial Details: @((MarkupString)link("https://beta.clinicaltrials.gov/study/", @trial?.NCTIdValue, @trial?.NCTIdValue))&nbsp;(CT.gov) | @((MarkupString)link("https://clinicaltrials.gov/ct2/history/", trial?.NCTIdValue,  "Changes"))&nbsp;(CT.gov)
+                            </div>
+                        </td>
+                        <td style=font-size:12px class=box>
+                            <div style=text-align:left class=@("status " + trial?.OverallStatusStyle)>@first(trial?.OverallStatus)</div><br/>
+                            <div class= style=text-align:right>Updated:&nbsp;@(trial?.LastUpdated.ToShortDateString())</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan=2>
+                            <div style=margin-left:10px;font-size:12px;font-weight:bold>
+                                @first(trial?.BriefTitle)
+                            </div>
+                            <div style=margin-left:10px;font-size:12px>
+                                Condition(s): @((MarkupString)links("/q/", trial?.Condition, trial?.Condition, " | ", newTab:false))
+                            </div>
+                            @if(!string.IsNullOrEmpty(first(trial?.WhyStopped))) 
+                            {
+                                <div style=margin-left:10px;font-size:12px>
+                                    Why stopped: @all(trial?.WhyStopped)
+                                </div>
+                            }
+
+                            @if(trial?.SeeAlsoLinkURL?.Count>0)
+                            {
+                                <div style=margin-left:10px;font-size:12px>
+                                    See Also: @((MarkupString)links(trial.SeeAlsoLinkURL, trial.SeeAlsoLinkLabel, " | "))
+                                </div>
+                            }
+                        </td>
+                        <td style=font-size:12px>
+                            @first(trial?.EnrollmentCount) people
+                            <br/>until @trial?.EndDate
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table> 
+}
+
+@code {
+
+    private void KeyDown(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            doSearch();
+        }
+    }
+
+    private void doSearch() {
+        if (QueryInfo.Terms == null || string.IsNullOrEmpty(QueryInfo.Terms.Trim()))
+        {
+            return;
+        }
+
+        query = QueryInfo.Terms;
+        NavManager.NavigateTo("/q/" + query);
+    }
+
+    private string link(string? linkUrl, string? label, bool newTab = true) {
+        return link("", linkUrl, label, newTab);
+    }
+
+    private string link(string urlPrefix, string? linkUrl, string? label, bool newTab = true) {
+        return "<a " + (newTab?"target=_blank ":"") + "href=" + urlPrefix + Uri.EscapeDataString(linkUrl ?? "") + ">" + label + "</a>";
+    }
+
+    private string links(string urlPrefix, List<string>? linkStrings, List<string>? labelStrings, string divider, bool newTab = true) {
+        string? retString = "";
+        if (linkStrings != null && labelStrings != null) {
+            for (int i = 0; i < linkStrings.Count; i++) {
+                if (retString != "") { 
+                    retString += divider;
+                } 
+
+                retString += link(urlPrefix, linkStrings[i], labelStrings[i], newTab:newTab);                
+            }
+        }
+
+        return retString;
+    }
+
+    private string links(List<string>? linkStrings, List<string>? labelStrings, string divider, bool newTab = true) {
+        string? retString = "";
+        if (linkStrings != null && labelStrings != null) {
+            for (int i = 0; i < linkStrings.Count; i++) {
+                if (retString != "") { 
+                    retString += divider;
+                } 
+
+                retString += link(linkStrings[i], "", labelStrings[i], newTab:newTab);                
+            }
+        }
+
+        return retString;
+    }
+
+    private string first(List<string>? strings) {
+        if (strings != null && strings.Count > 0) {
+            return strings[0];
+        } else {
+            return "";
+        }
+    }
+
+    private string last(List<string>? strings) {
+        if (strings != null && strings.Count > 0) {
+            return strings[strings.Count - 1];
+        } else {
+            return "";
+        }
+    }
+
+    private string three(List<string> strings, string divider = " ") {
+        return all(strings, 3, divider);
+    }
+
+    private string all(List<string>? strings, string divider = " ") {
+        return all(strings, -1, divider);
+    }
+
+    private string all(List<string>? strings, int limit, string divider) {
+        int count = 0;
+        string? retString = "";
+        if (strings != null) {
+            foreach (var str in strings) {
+                if (count++ == limit) {
+                    retString += divider + "...";
+                    break;
+                }
+
+                if (retString != "") {
+                    retString += divider;
+                }
+
+                retString += str;
+            }
+        }
+
+        return retString;
+    }
+
+    private List<Trial>? trialList = null;
+    private IOrderedEnumerable<Trial>? trials = null;
+    int? trialCount;
+    [Parameter]
+    public string? query { get; set; }
+    private QueryInfo QueryInfo { get; set; } = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        trials = null;
+        trialCount = null;
+        trialList = null;
+        
+        await UpdateAsync();        
+    }
+
+    protected async Task UpdateAsync()
+    {
+        var moreToGet = 1;
+        var maxRank = 999;
+        var minRank = 1;
+    
+        QueryInfo.Terms = query;
+        if (query == null || query?.Trim() == "") return;
+
+        while (moreToGet > 0) {
+            var url = "https://classic.clinicaltrials.gov/api/query/study_fields?expr=" + Uri.EscapeDataString(query ?? "") 
+            + "&fields=NCTId,Condition,LocationFacility,BriefTitle,StudyType,Phase,OverallStatus,WhyStopped,LeadSponsorName,InterventionName,StudyFirstPostDate,StartDate,StartDateType,LastUpdatePostDate,PrimaryCompletionDate,CompletionDate,SeeAlsoLinkURL,SeeAlsoLinkLabel,EnrollmentCount&fmt=JSON&min_rnk="+minRank.ToString()+"&max_rnk="+maxRank.ToString();
+
+            var data = await Http.GetFromJsonAsync<QueryRoot>(url);
+
+            if (data != null && data.StudyFieldsResponse != null) { // && "StudyFields" in data.StudyFieldsResponse) {
+                trialCount = data.StudyFieldsResponse.NStudiesFound;
+                foreach (var trial in data.StudyFieldsResponse.StudyFields) {
+                    if (trial != null) {
+                        string? CompletionDate = null;
+                        if (trial.CompletionDate?.Count != 0) {
+                            CompletionDate = first(trial.CompletionDate);
+                        } else if (trial.PrimaryCompletionDate?.Count != 0) {
+                            CompletionDate = first(trial.PrimaryCompletionDate);
+                        } else if (trial.LastUpdatePostDate?.Count != 0) {
+                            CompletionDate = first(trial.LastUpdatePostDate);
+                        } else {
+                            throw new InvalidDataException("CompletionData not valid");
+                        }
+
+                        trial.EndDate = DateTime.Parse(CompletionDate).ToShortDateString();
+
+                        var lastPhase = last(trial.Phase);
+                        var firstPhase = first(trial.Phase);
+                        trial.PhaseInfo = Trial.GetPhaseInfo(lastPhase, firstPhase, first(trial.StudyType));
+
+                        trial.Closed = trial.GetClosedInfo();
+
+                        switch (first(trial.OverallStatus)) 
+                        {
+                            case "Enrolling by invitation":
+                            case "Not yet recruiting":
+                            case "Recruiting":
+                            case "Approved for marketing":
+                            case "Active, not recruiting":
+                                trial.OverallStatusStyle = "Active";
+                                break;
+                            case "Unknown status":
+                                trial.OverallStatusStyle = "Unknown";
+                                break;
+                            default:
+                                trial.OverallStatusStyle = first(trial.OverallStatus);
+                                break;
+                        }
+
+                        if (trialList == null) {
+                            trialList = new List<Trial>();
+                        }
+
+                        trialList.Add(trial);
+                    }
+                }
+
+                if (trialCount > maxRank && maxRank < 5000)
+                {
+                    minRank = minRank + 999;
+                    maxRank = maxRank + 999;
+                    moreToGet = 1;
+                } else {
+                    moreToGet = 0;
+                }
+            }
+        }
+    }
+}
