@@ -1,6 +1,4 @@
-﻿using ClinicalTrials.Core;
-
-namespace Models
+﻿namespace ClinicalTrials.Core
 {
     public class QueryFile : NotifyingBase
     {
