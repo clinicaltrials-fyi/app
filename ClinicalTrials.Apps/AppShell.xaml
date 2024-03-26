@@ -5,11 +5,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:ClinicalTrials.Apps"
     Shell.FlyoutBehavior="Disabled"
-    Title="ClinicalTrials.Apps">
+    Title="Clinical Trials FYI">
 
     <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        Title="Queries"
+        ContentTemplate="{DataTemplate local:Queries}"
+        Route="queries">
+        <ShellContent Title="Query" Route="query" ContentTemplate="{DataTemplate local:Query}" />
+    </ShellContent>
 
 </Shell>

@@ -8,9 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ClinicalTrials.Apps\**" />
     <Compile Remove="ClinicalTrials.Core\**" />
+    <Content Remove="ClinicalTrials.Apps\**" />
     <Content Remove="ClinicalTrials.Core\**" />
+    <EmbeddedResource Remove="ClinicalTrials.Apps\**" />
     <EmbeddedResource Remove="ClinicalTrials.Core\**" />
+    <None Remove="ClinicalTrials.Apps\**" />
     <None Remove="ClinicalTrials.Core\**" />
   </ItemGroup>
 
