@@ -243,7 +243,7 @@ else if (trialList != null)
     int? trialCount;
     [Parameter]
     public string? query { get; set; }
-    private QueryInfo QueryInfo { get; set; } = new();
+    private QueryInfo? QueryInfo { get; set; } = new("untitled");
 
     protected override async Task OnParametersSetAsync()
     {

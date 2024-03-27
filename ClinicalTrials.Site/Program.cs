@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using ClinicalTrials.Core;
 using ClinicalTrials.Site;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
