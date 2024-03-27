@@ -32,7 +32,7 @@ public partial class Query : ContentPage, IQueryAttributable
                     var queryInfo = await DeviceProfileUtility.Load(key);
                     QueryInfo = queryInfo;
                 }
-            
+
                 BindingContext = QueryInfo;
             }
         }
@@ -56,9 +56,12 @@ public partial class Query : ContentPage, IQueryAttributable
 
     private void HideInvoked(object sender, EventArgs e)
     {
-        var item = (sender as BindableObject).BindingContext as Study;
-        QueryInfo.TrialsToHide.Add(item.ProtocolSection.IdentificationModule.NctId);
-        QueryInfo.Studies.Remove(item);
+        var item = (sender as BindableObject)?.BindingContext as Study;
+        if (item != null)
+        {
+            QueryInfo.TrialsToHide.Add(item.ProtocolSection.IdentificationModule.NctId);
+            QueryInfo.Studies.Remove(item);
+        }
     }
 
     private async void Back_Clicked(object sender, EventArgs e)

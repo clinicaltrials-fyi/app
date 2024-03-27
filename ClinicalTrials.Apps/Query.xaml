@@ -6,6 +6,9 @@
              x:Class="ClinicalTrials.Apps.Query"
              x:DataType="m:QueryInfo"
              >
+    <ContentPage.Resources>
+        <a:EnumPrettifier x:Key="EnumPretty" />
+    </ContentPage.Resources>
     <Shell.TitleView>
         <Grid ColumnDefinitions="*,*,*" x:Name="titleView">
             <Button Text="&lt;" TextColor="{AppThemeBinding Dark=White,Light=Black}" Clicked="Back_Clicked" Background="Transparent" HorizontalOptions="Start"/>
@@ -26,8 +29,8 @@
                         <SwipeView.RightItems>
                             <SwipeItem Text="Hide" BackgroundColor="LightPink" Invoked="HideInvoked" />
                         </SwipeView.RightItems>
-                        <Grid ColumnDefinitions="*,100,100" RowDefinitions="Auto,Auto,Auto,Auto,25" >
-                            <Label FontSize="18" Grid.ColumnSpan="2">
+                        <Grid ColumnDefinitions="*,100" RowDefinitions="Auto,Auto,Auto,Auto,25" >
+                            <Label FontSize="18" Grid.ColumnSpan="1">
                                 <Label.FormattedText>
                                     <FormattedString>
                                         <Span Text="{Binding ProtocolSection.IdentificationModule.Organization.Class}"  />
@@ -36,8 +39,8 @@
                                     </FormattedString>
                                 </Label.FormattedText>
                             </Label>
-                            <Label Text="{Binding ProtocolSection.StatusModule.OverallStatus}" Grid.Column="2" Grid.Row="1"/>
-                            <Label Text="{Binding ProtocolSection.StatusModule.LastUpdateSubmitDate.Date}" Grid.Column="2" />
+                            <Label Text="{Binding ProtocolSection.StatusModule.LastUpdateSubmitDate.Date, StringFormat='{0:M-d-yy}'}" Grid.Column="1" HorizontalOptions="End"/>
+                            <Label Text="{Binding ProtocolSection.StatusModule.OverallStatus, Converter={StaticResource EnumPretty}}" Grid.Column="1" Grid.Row="1" HorizontalOptions="End" HorizontalTextAlignment="End"/>
                             <Label Grid.Row="1" Margin="15,0">
                                 <Label.FormattedText>
                                     <FormattedString>
@@ -45,7 +48,7 @@
                                     </FormattedString>
                                 </Label.FormattedText>
                             </Label>
-                            <Label Grid.Row="2" Margin="15,0" Grid.ColumnSpan="3">
+                            <Label Grid.Row="2" Margin="15,0" Grid.ColumnSpan="2">
                                 <Label.FormattedText>
                                     <FormattedString>
                                         <Span Text="{Binding ProtocolSection.IdentificationModule.BriefTitle}" />
