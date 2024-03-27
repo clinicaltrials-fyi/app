@@ -41,14 +41,14 @@ public partial class Query : ContentPage, IQueryAttributable
 
         StudiesClient studiesClient = new(new HttpClient()) { ReadResponseAsString = true };
         var token = new CancellationToken();
-        var fields = "NCTId,Condition,LocationFacility,Organization,BriefTitle,StudyType,Phase,OverallStatus,WhyStopped,LeadSponsorName,InterventionName,StudyFirstPostDate,StartDate,StartDateType,LastUpdatePostDate,PrimaryCompletionDate,CompletionDate,SeeAlsoLinkURL,SeeAlsoLinkLabel,EnrollmentCount";
+        var fields = "NCTId,Condition,LocationFacility,Organization,BriefTitle,StudyType,Phase,OverallStatus,WhyStopped,LeadSponsorName,InterventionName,StudyFirstPostDate,StartDate,StartDateType,LastUpdateSubmitDate,LastUpdatePostDate,PrimaryCompletionDate,CompletionDate,SeeAlsoLinkURL,SeeAlsoLinkLabel,EnrollmentCount";
         var fieldsList = new List<string>() { fields };
         var sort = "LastUpdatePostDate:desc";
         var sortList = new List<string>() { sort };
         var pagedStudies = await studiesClient.ListStudiesAsync(Format.Json, MarkupFormat.Markdown, QueryInfo.Terms ?? "", query_term: null, query_locn: null, query_titles: null, query_intr: null, query_outc: null, query_spons: null, query_lead: null, query_id: null, query_patient: null, filter_overallStatus: null,
             filter_geo: null, filter_ids: null, filter_advanced: null, filter_synonyms: null, postFilter_overallStatus: null, postFilter_geo: null, postFilter_ids: null, postFilter_advanced: null, postFilter_synonyms: null, aggFilters: null, geoDecay: null, fields: fieldsList, sort: sortList,
             countTotal: true, pageSize: 100, pageToken: null, cancellationToken: token);
-        foreach (var study in pagedStudies.Studies)
+        foreach (var study in pagedStudies.Studies.OrderByDescending(s => s.ProtocolSection.StatusModule.LastUpdatePostDateStruct.Date))
         {
             QueryInfo.Studies.Add(study);
         }

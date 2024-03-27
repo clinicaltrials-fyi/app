@@ -23,11 +23,26 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="m:Study">
                     <VerticalStackLayout >
-                        <Label Text="{Binding ProtocolSection.IdentificationModule.NctId}" />
+                        <Label>
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding ProtocolSection.IdentificationModule.NctId}"  />
+                                    <Span Text=": " />
+                                    <Span Text="{Binding ProtocolSection.IdentificationModule.BriefTitle}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Label Text="{Binding ProtocolSection.StatusModule.LastUpdatePostDateStruct.Date}" />
                         <Label Text="{Binding ProtocolSection.StatusModule.OverallStatus}" />
-                        <Label Text="{Binding ProtocolSection.IdentificationModule.BriefTitle}" />
-                        <Label Text="{Binding ProtocolSection.IdentificationModule.Organization.Class}"  />
-                        <Label Text="{Binding ProtocolSection.IdentificationModule.Organization.FullName}" Margin="0,0,0,15" />
+                        <Label Margin="0,0,0,5">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding ProtocolSection.IdentificationModule.Organization.Class}"  />
+                                    <Span Text=" / " />
+                                    <Span Text="{Binding ProtocolSection.IdentificationModule.Organization.FullName}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
                     </VerticalStackLayout>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
