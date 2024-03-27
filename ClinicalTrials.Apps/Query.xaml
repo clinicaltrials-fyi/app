@@ -11,17 +11,17 @@
     </ContentPage.Resources>
     <Shell.TitleView>
         <Grid ColumnDefinitions="*,*,*" x:Name="titleView">
-            <Button Text="&lt;" TextColor="{AppThemeBinding Dark=White,Light=Black}" Clicked="Back_Clicked" Background="Transparent" HorizontalOptions="Start"/>
+            <Button Text="&lt;" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Dark=White,Light=Black}" Clicked="Back_Clicked" Background="Transparent" HorizontalOptions="Start"/>
             <Label Text="{Binding Name}" MaxLines="2" LineBreakMode="TailTruncation" TextColor="{AppThemeBinding Dark=White, Light=Black}" FontAttributes="Bold"  FontSize="Small" HorizontalOptions="Center" VerticalOptions="Center" Grid.Column="1" x:Name="profileLabel"/>
             <HorizontalStackLayout Grid.Column="2" HorizontalOptions="End">
-                <Button Text="Save" Clicked="Save_Clicked" />
+                <Button Text="📃Save" Clicked="Save_Clicked" BackgroundColor="Transparent" TextColor="{AppThemeBinding Dark=White,Light=Black}"/>
             </HorizontalStackLayout>
         </Grid>
     </Shell.TitleView>
     <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,*">
-        <Label Text="ClinicalTrials.gov search:" Grid.Column="0"/>
-        <Entry Text="{Binding Terms}" Grid.Column="1" x:Name="terms" />
-        <Button Text="Go" Clicked="Go_Clicked" Grid.Column="2"/>
+        <Label Text="Terms:" Grid.Column="0" VerticalOptions="Center" Margin="5,0"/>
+        <Entry Text="{Binding Terms}" Grid.Column="1" x:Name="terms" Placeholder="condition names, etc..." />
+        <Button Text="Fetch" Clicked="Go_Clicked" Grid.Column="2" BackgroundColor="Transparent" TextColor="{AppThemeBinding Dark=White,Light=Black}"/>
         <CollectionView x:Name="trialsView" ItemsSource="{Binding Studies}" Grid.Row="1" Grid.ColumnSpan="3">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="m:Study">
