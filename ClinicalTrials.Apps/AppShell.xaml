@@ -10,8 +10,10 @@
     <ShellContent
         Title="Queries"
         ContentTemplate="{DataTemplate local:Queries}"
-        Route="queries">
-        <ShellContent Title="Query" Route="query" ContentTemplate="{DataTemplate local:Query}" />
-    </ShellContent>
+        Route="queries"/>
+    <ShellContent 
+        Title="Query" 
+        Route="query"
+        ContentTemplate="{DataTemplate local:Query}" />
 
 </Shell>

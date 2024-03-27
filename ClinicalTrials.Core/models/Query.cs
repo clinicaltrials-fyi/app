@@ -1,3 +1,4 @@
+namespace ClinicalTrials.Core;
 public class Query {
     public string Terms { get; set; }
     public List<string> TrialsToHide { get; set; }

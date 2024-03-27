@@ -1,9 +1,33 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:m="clr-namespace:ClinicalTrials.Core;assembly=ClinicalTrials.Core"
+             xmlns:a="clr-namespace:ClinicalTrials.Apps"
              x:Class="ClinicalTrials.Apps.Query"
-             Title="Query">
-    <VerticalStackLayout>
-
-    </VerticalStackLayout>
+             x:DataType="m:QueryInfo"
+             >
+    <Shell.TitleView>
+        <Grid ColumnDefinitions="*,*,*" x:Name="titleView">
+            <Button Text="&lt;" Clicked="Back_Clicked" Background="Transparent" />
+            <Label Text="{Binding Name}" TextColor="{AppThemeBinding Dark=White, Light=Black}" FontAttributes="Bold"  FontSize="Medium" HorizontalOptions="Center" VerticalOptions="Center" Grid.Column="1" x:Name="profileLabel"/>
+            <HorizontalStackLayout Grid.Column="2" HorizontalOptions="End">
+                <Button Text="Save" Clicked="Save_Clicked" />
+            </HorizontalStackLayout>
+        </Grid>
+    </Shell.TitleView>
+    <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,*">
+        <Label Text="ClinicalTrials.gov search:" Grid.Column="0"/>
+        <Entry Text="{Binding Terms}" Grid.Column="1" x:Name="terms" />
+        <Button Text="Go" Clicked="Go_Clicked" Grid.Column="2"/>
+        <CollectionView x:Name="trialsView" ItemsSource="{Binding Trials}" Grid.Row="1" Grid.ColumnSpan="3">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="m:Trial">
+                    <Grid RowDefinitions="Auto,Auto,10">
+                        <Label Text="{Binding NCTIdValue}" />
+                        <Label Text="{Binding PhaseInfo.Name}" Grid.Row="1" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
 </ContentPage>
