@@ -19,13 +19,16 @@
         <Label Text="ClinicalTrials.gov search:" Grid.Column="0"/>
         <Entry Text="{Binding Terms}" Grid.Column="1" x:Name="terms" />
         <Button Text="Go" Clicked="Go_Clicked" Grid.Column="2"/>
-        <CollectionView x:Name="trialsView" ItemsSource="{Binding Trials}" Grid.Row="1" Grid.ColumnSpan="3">
+        <CollectionView x:Name="trialsView" ItemsSource="{Binding Studies}" Grid.Row="1" Grid.ColumnSpan="3">
             <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="m:Trial">
-                    <Grid RowDefinitions="Auto,Auto,10">
-                        <Label Text="{Binding NCTIdValue}" />
-                        <Label Text="{Binding PhaseInfo.Name}" Grid.Row="1" />
-                    </Grid>
+                <DataTemplate x:DataType="m:Study">
+                    <VerticalStackLayout >
+                        <Label Text="{Binding ProtocolSection.IdentificationModule.NctId}" />
+                        <Label Text="{Binding ProtocolSection.StatusModule.OverallStatus}" />
+                        <Label Text="{Binding ProtocolSection.IdentificationModule.BriefTitle}" />
+                        <Label Text="{Binding ProtocolSection.IdentificationModule.Organization.Class}"  />
+                        <Label Text="{Binding ProtocolSection.IdentificationModule.Organization.FullName}" Margin="0,0,0,15" />
+                    </VerticalStackLayout>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

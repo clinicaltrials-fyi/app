@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ClinicalTrials.Core;
 
@@ -17,6 +18,10 @@ public class QueryInfo : NotifyingBase
     public string? SortOrder { get { return sortOrder; } set { sortOrder = value; OnPropertyChanged(); } }
     public DateTime? LastUpdated { get { return lastUpdated; } set { lastUpdated = value; OnPropertyChanged(); } }
     public List<string> TrialsToHide { get; set; } = [];
+    public ObservableCollection<Study> Studies { get; set; } = [];
+
+    // Legacy API
+    [JsonIgnore]
     public ObservableCollection<Trial> Trials { get; set; } = [];
 
     private string? name;
