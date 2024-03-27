@@ -9,7 +9,7 @@
     <Shell.TitleView>
         <Grid ColumnDefinitions="*,*,*" x:Name="titleView">
             <Button Text="&lt;" TextColor="{AppThemeBinding Dark=White,Light=Black}" Clicked="Back_Clicked" Background="Transparent" HorizontalOptions="Start"/>
-            <Label Text="{Binding Name}" TextColor="{AppThemeBinding Dark=White, Light=Black}" FontAttributes="Bold"  FontSize="Medium" HorizontalOptions="Center" VerticalOptions="Center" Grid.Column="1" x:Name="profileLabel"/>
+            <Label Text="{Binding Name}" MaxLines="2" LineBreakMode="TailTruncation" TextColor="{AppThemeBinding Dark=White, Light=Black}" FontAttributes="Bold"  FontSize="Small" HorizontalOptions="Center" VerticalOptions="Center" Grid.Column="1" x:Name="profileLabel"/>
             <HorizontalStackLayout Grid.Column="2" HorizontalOptions="End">
                 <Button Text="Save" Clicked="Save_Clicked" />
             </HorizontalStackLayout>
@@ -22,34 +22,38 @@
         <CollectionView x:Name="trialsView" ItemsSource="{Binding Studies}" Grid.Row="1" Grid.ColumnSpan="3">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="m:Study">
-                    <Grid ColumnDefinitions="*,100,100" RowDefinitions="Auto,Auto,Auto,Auto,25" >
-                        <Label FontSize="18">
-                            <Label.FormattedText>
-                                <FormattedString>
-                                    <Span Text="{Binding ProtocolSection.IdentificationModule.Organization.Class}"  />
-                                    <Span Text=" / " />
-                                    <Span Text="{Binding ProtocolSection.IdentificationModule.Organization.FullName}" />
-                                </FormattedString>
-                            </Label.FormattedText>
-                        </Label>
-                        <Label Text="{Binding ProtocolSection.StatusModule.OverallStatus}" Grid.Column="1" />
-                        <Label Text="{Binding ProtocolSection.StatusModule.LastUpdateSubmitDate.Date}" Grid.Column="2" />
-                        <Label Grid.Row="1" Margin="15,0">
-                            <Label.FormattedText>
-                                <FormattedString>
-                                    <Span Text="{Binding ProtocolSection.IdentificationModule.NctId}"  />
-                                </FormattedString>
-                            </Label.FormattedText>
-                        </Label>
-                        <Label Grid.Row="2" Margin="15,0" Grid.ColumnSpan="3">
-                            <Label.FormattedText>
-                                <FormattedString>
-                                    <Span Text="{Binding ProtocolSection.IdentificationModule.BriefTitle}" />
-                                </FormattedString>
-                            </Label.FormattedText>
-                        </Label>
-                        
-                    </Grid>
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItem Text="Hide" BackgroundColor="LightPink" Invoked="HideInvoked" />
+                        </SwipeView.RightItems>
+                        <Grid ColumnDefinitions="*,100,100" RowDefinitions="Auto,Auto,Auto,Auto,25" >
+                            <Label FontSize="18" Grid.ColumnSpan="2">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding ProtocolSection.IdentificationModule.Organization.Class}"  />
+                                        <Span Text=" / " />
+                                        <Span Text="{Binding ProtocolSection.IdentificationModule.Organization.FullName}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                            <Label Text="{Binding ProtocolSection.StatusModule.OverallStatus}" Grid.Column="2" Grid.Row="1"/>
+                            <Label Text="{Binding ProtocolSection.StatusModule.LastUpdateSubmitDate.Date}" Grid.Column="2" />
+                            <Label Grid.Row="1" Margin="15,0">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding ProtocolSection.IdentificationModule.NctId}"  />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                            <Label Grid.Row="2" Margin="15,0" Grid.ColumnSpan="3">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding ProtocolSection.IdentificationModule.BriefTitle}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </Grid>
+                    </SwipeView>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

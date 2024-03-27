@@ -54,6 +54,13 @@ public partial class Query : ContentPage, IQueryAttributable
         }
     }
 
+    private void HideInvoked(object sender, EventArgs e)
+    {
+        var item = (sender as BindableObject).BindingContext as Study;
+        QueryInfo.TrialsToHide.Add(item.ProtocolSection.IdentificationModule.NctId);
+        QueryInfo.Studies.Remove(item);
+    }
+
     private async void Back_Clicked(object sender, EventArgs e)
     {
         await Shell.Current.GoToAsync(state: "///queries");
@@ -75,7 +82,10 @@ public partial class Query : ContentPage, IQueryAttributable
             countTotal: true, pageSize: 100, pageToken: null, cancellationToken: token);
         foreach (var study in pagedStudies.Studies.OrderByDescending(s => s.ProtocolSection.StatusModule.LastUpdatePostDateStruct.Date))
         {
-            QueryInfo.Studies.Add(study);
+            if (!QueryInfo.TrialsToHide.Contains(study.ProtocolSection.IdentificationModule.NctId))
+            {
+                QueryInfo.Studies.Add(study);
+            }
         }
     }
 
@@ -184,44 +194,6 @@ public partial class Query : ContentPage, IQueryAttributable
         return "<a " + (newTab ? "target=_blank " : "") + "href=" + urlPrefix + Uri.EscapeDataString(linkUrl ?? "") + ">" + label + "</a>";
     }
 
-    private string links(string urlPrefix, List<string>? linkStrings, List<string>? labelStrings, string divider, bool newTab = true)
-    {
-        string? retString = "";
-        if (linkStrings != null && labelStrings != null)
-        {
-            for (int i = 0; i < linkStrings.Count; i++)
-            {
-                if (retString != "")
-                {
-                    retString += divider;
-                }
-
-                retString += link(urlPrefix, linkStrings[i], labelStrings[i], newTab: newTab);
-            }
-        }
-
-        return retString;
-    }
-
-    private string links(List<string>? linkStrings, List<string>? labelStrings, string divider, bool newTab = true)
-    {
-        string? retString = "";
-        if (linkStrings != null && labelStrings != null)
-        {
-            for (int i = 0; i < linkStrings.Count; i++)
-            {
-                if (retString != "")
-                {
-                    retString += divider;
-                }
-
-                retString += link(linkStrings[i], "", labelStrings[i], newTab: newTab);
-            }
-        }
-
-        return retString;
-    }
-
     private string first(List<string>? strings)
     {
         if (strings != null && strings.Count > 0)
@@ -245,42 +217,4 @@ public partial class Query : ContentPage, IQueryAttributable
             return "";
         }
     }
-
-    private string three(List<string> strings, string divider = " ")
-    {
-        return all(strings, 3, divider);
-    }
-
-    private string all(List<string>? strings, string divider = " ")
-    {
-        return all(strings, -1, divider);
-    }
-
-    private string all(List<string>? strings, int limit, string divider)
-    {
-        int count = 0;
-        string? retString = "";
-        if (strings != null)
-        {
-            foreach (var str in strings)
-            {
-                if (count++ == limit)
-                {
-                    retString += divider + "...";
-                    break;
-                }
-
-                if (retString != "")
-                {
-                    retString += divider;
-                }
-
-                retString += str;
-            }
-        }
-
-        return retString;
-    }
-
-
 }
