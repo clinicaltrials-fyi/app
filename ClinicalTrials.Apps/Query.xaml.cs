@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Web;
 using ClinicalTrials.Core;
 
 namespace ClinicalTrials.Apps;
@@ -19,15 +20,39 @@ public partial class Query : ContentPage, IQueryAttributable
             var key = query["name"] as string;
             if (key != null)
             {
-                Title = key;
-                var queryInfo = await DeviceProfileUtility.Load(key);
-                QueryInfo = queryInfo;
-                BindingContext = queryInfo;
+                key = HttpUtility.UrlDecode(key);
+                if (key == Queries.NewQueryKey)
+                {
+                    Title = "";
+                    QueryInfo = new QueryInfo("");
+                }
+                else
+                {
+                    Title = key;
+                    var queryInfo = await DeviceProfileUtility.Load(key);
+                    QueryInfo = queryInfo;
+                }
+            
+                BindingContext = QueryInfo;
             }
         }
     }
 
     private QueryInfo QueryInfo { get; set; }
+
+    private async void Save_Clicked(object sender, EventArgs e)
+    {
+        var terms = QueryInfo.Terms;
+        if (terms != null && !string.IsNullOrEmpty(terms.Trim()))
+        {
+            if (QueryInfo.Name == "")
+            {
+                QueryInfo.Name = await DeviceProfileUtility.FindProfileName(terms);
+            }
+
+            await DeviceProfileUtility.Save(QueryInfo.Name, QueryInfo);
+        }
+    }
 
     private async void Back_Clicked(object sender, EventArgs e)
     {
@@ -53,6 +78,7 @@ public partial class Query : ContentPage, IQueryAttributable
             QueryInfo.Studies.Add(study);
         }
     }
+
 
     private async Task CallLegacyAPI()
     {
@@ -256,8 +282,5 @@ public partial class Query : ContentPage, IQueryAttributable
         return retString;
     }
 
-    private async void Save_Clicked(object sender, EventArgs e)
-    {
-        await DeviceProfileUtility.Save(QueryInfo.Name, QueryInfo);
-    }
+
 }

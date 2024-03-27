@@ -12,6 +12,7 @@ namespace ClinicalTrials.Apps
             this.Loaded += Queries_Loaded;
         }
 
+        public static readonly string NewQueryKey = "__newQuery__";
         private async void Queries_Loaded(object? sender, EventArgs e)
         {
             queryFiles.Clear();
@@ -28,11 +29,7 @@ namespace ClinicalTrials.Apps
 
         private async void NewQuery_Clicked(object sender, EventArgs e)
         {
-            var key = await DeviceProfileUtility.FindProfileName("untitled");
-            var queryInfo = new QueryInfo(key);
-            await DeviceProfileUtility.Save(key, queryInfo);
-            var queryFile = new QueryFile(key, DeviceProfileUtility.GetFilename(key));
-            queryFiles.Insert(0, queryFile);
+            await NavigateToProfile(NewQueryKey);
         }
 
         private async void queryView_SelectionChanged(object sender, SelectionChangedEventArgs e)

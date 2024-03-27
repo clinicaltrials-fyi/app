@@ -77,7 +77,7 @@ namespace ClinicalTrials.Apps
         {
             var keys = await GetAllKeys();
             int i = 1;
-            string newKeyName = baseName + i.ToString();
+            string newKeyName = baseName;
 
             while (i < 10000)
             {
