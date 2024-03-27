@@ -8,7 +8,7 @@
              >
     <Shell.TitleView>
         <Grid ColumnDefinitions="*,*,*" x:Name="titleView">
-            <Button Text="&lt;" Clicked="Back_Clicked" Background="Transparent" />
+            <Button Text="&lt;" TextColor="{AppThemeBinding Dark=White,Light=Black}" Clicked="Back_Clicked" Background="Transparent" HorizontalOptions="Start"/>
             <Label Text="{Binding Name}" TextColor="{AppThemeBinding Dark=White, Light=Black}" FontAttributes="Bold"  FontSize="Medium" HorizontalOptions="Center" VerticalOptions="Center" Grid.Column="1" x:Name="profileLabel"/>
             <HorizontalStackLayout Grid.Column="2" HorizontalOptions="End">
                 <Button Text="Save" Clicked="Save_Clicked" />
@@ -22,19 +22,8 @@
         <CollectionView x:Name="trialsView" ItemsSource="{Binding Studies}" Grid.Row="1" Grid.ColumnSpan="3">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="m:Study">
-                    <VerticalStackLayout >
-                        <Label>
-                            <Label.FormattedText>
-                                <FormattedString>
-                                    <Span Text="{Binding ProtocolSection.IdentificationModule.NctId}"  />
-                                    <Span Text=": " />
-                                    <Span Text="{Binding ProtocolSection.IdentificationModule.BriefTitle}" />
-                                </FormattedString>
-                            </Label.FormattedText>
-                        </Label>
-                        <Label Text="{Binding ProtocolSection.StatusModule.LastUpdatePostDateStruct.Date}" />
-                        <Label Text="{Binding ProtocolSection.StatusModule.OverallStatus}" />
-                        <Label Margin="0,0,0,5">
+                    <Grid ColumnDefinitions="*,100,100" RowDefinitions="Auto,Auto,Auto,Auto,25" >
+                        <Label FontSize="18">
                             <Label.FormattedText>
                                 <FormattedString>
                                     <Span Text="{Binding ProtocolSection.IdentificationModule.Organization.Class}"  />
@@ -43,7 +32,24 @@
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
-                    </VerticalStackLayout>
+                        <Label Text="{Binding ProtocolSection.StatusModule.OverallStatus}" Grid.Column="1" />
+                        <Label Text="{Binding ProtocolSection.StatusModule.LastUpdateSubmitDate.Date}" Grid.Column="2" />
+                        <Label Grid.Row="1" Margin="15,0">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding ProtocolSection.IdentificationModule.NctId}"  />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Label Grid.Row="2" Margin="15,0" Grid.ColumnSpan="3">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding ProtocolSection.IdentificationModule.BriefTitle}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        
+                    </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
