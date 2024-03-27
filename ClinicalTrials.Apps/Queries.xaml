@@ -11,10 +11,15 @@
         <CollectionView x:Name="queryView" SelectionMode="Single" SelectionChanged="queryView_SelectionChanged">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="m:QueryFile">
-                    <VerticalStackLayout>
-                        <Label Margin="20,0" Text="{Binding Name}" FontSize="20" />
-                        <Label Margin="20,0,0,5" Text="{Binding LastUpdated}" FontSize="14" TextColor="Gray" />
-                    </VerticalStackLayout>
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItem Text="Delete" BackgroundColor="LightPink" Invoked="DeleteItem_Invoked" />
+                        </SwipeView.RightItems>
+                        <VerticalStackLayout>
+                            <Label Margin="20,0" Text="{Binding Name}" FontSize="20" />
+                            <Label Margin="20,0,0,5" Text="{Binding LastUpdated}" FontSize="14" TextColor="Gray" />
+                        </VerticalStackLayout>
+                    </SwipeView>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

@@ -51,5 +51,12 @@ namespace ClinicalTrials.Apps
 
         private ObservableCollection<QueryFile> queryFiles = [];
         private static DeviceProfileUtility DeviceProfileUtility { get; set; } = new DeviceProfileUtility();
+
+        private void DeleteItem_Invoked(object sender, EventArgs e)
+        {
+            var item = (sender as BindableObject).BindingContext as QueryFile;
+            queryFiles.Remove(item);
+            DeviceProfileUtility.DeleteItem(item.Name);
+        }
     }
 }
