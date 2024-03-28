@@ -42,6 +42,11 @@ public partial class Query : ContentPage, IQueryAttributable
 
     private async void Save_Clicked(object sender, EventArgs e)
     {
+        Save();
+    }
+
+    private async void Save()
+    {
         var terms = QueryInfo.Terms;
         if (terms != null && !string.IsNullOrEmpty(terms.Trim()))
         {
@@ -90,8 +95,19 @@ public partial class Query : ContentPage, IQueryAttributable
                 QueryInfo.Studies.Add(study);
             }
         }
+
+        Save();
     }
 
+    private void trialsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var selectedStudy = trialsView.SelectedItem as Study;
+        if (selectedStudy != null)
+        {
+            Save();
+            Shell.Current.GoToAsync($"///webview?backQuery={QueryInfo.Name}&url=https://clinicaltrials.gov/study/{selectedStudy.ProtocolSection.IdentificationModule.NctId}?cond={QueryInfo.Terms}");
+        }
+    }
 
     private async Task CallLegacyAPI()
     {

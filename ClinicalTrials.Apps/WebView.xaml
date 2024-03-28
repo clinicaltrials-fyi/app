@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ClinicalTrials.Apps.WebView"
+             >
+    <Shell.TitleView>
+        <Grid ColumnDefinitions="*,*,*" x:Name="titleView">
+            <Button Text="&lt;" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Dark=White,Light=Black}" Clicked="Back_Clicked" Background="Transparent" HorizontalOptions="Start"/>
+            <Label Text="{Binding Title}" MaxLines="2" LineBreakMode="TailTruncation" TextColor="{AppThemeBinding Dark=White, Light=Black}" FontAttributes="Bold"  FontSize="Small" HorizontalOptions="Center" VerticalOptions="Center" Grid.Column="1" x:Name="profileLabel"/>
+            <HorizontalStackLayout Grid.Column="2" HorizontalOptions="End">
+            </HorizontalStackLayout>
+        </Grid>
+    </Shell.TitleView>
+    <WebView x:Name="webView" />
+</ContentPage>

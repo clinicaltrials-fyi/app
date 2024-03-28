@@ -15,5 +15,8 @@
         Title="Query" 
         Route="query"
         ContentTemplate="{DataTemplate local:Query}" />
-
+    <ShellContent 
+        Title="ClinicalTrials.gov" 
+        Route="webview"
+        ContentTemplate="{DataTemplate local:WebView}" />
 </Shell>
