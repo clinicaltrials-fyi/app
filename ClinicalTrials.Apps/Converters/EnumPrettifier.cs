@@ -9,11 +9,12 @@ namespace ClinicalTrials.Apps
             var type = value.GetType();
             if (type.IsEnum)
             {
-                TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
-
-                string enumValue = Enum.GetName(type, value);
-                enumValue = enumValue.Replace('_', ' ');
-                return textInfo.ToTitleCase(enumValue.ToLowerInvariant());
+                string? enumValue = Enum.GetName(type, value);
+                if (enumValue != null)
+                {
+                    enumValue = enumValue.Replace('_', ' ');
+                    return TextInfo.ToTitleCase(enumValue.ToLowerInvariant());
+                }
             }
 
             return value;
@@ -23,5 +24,7 @@ namespace ClinicalTrials.Apps
         {
             throw new NotImplementedException();
         }
+
+        private static TextInfo TextInfo = new CultureInfo("en-US", false).TextInfo;
     }
 }
