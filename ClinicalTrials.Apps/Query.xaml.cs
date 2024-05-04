@@ -126,12 +126,17 @@ public partial class Query : ContentPage, IQueryAttributable
     private static void PreprocessQueryTerms(QueryInfo queryInfo)
     {
         var terms = queryInfo.Terms;
-        if (terms != null && terms.StartsWith("not "))
+        if (terms != null)
         {
-            terms = "NOT" + terms.Substring(3);
-        }
+            terms = terms.Trim();
+            if (terms.StartsWith("not "))
+            {
+                terms = "NOT" + terms.Substring(3);
+            }
 
-        queryInfo.Terms = terms != null ? terms.Replace(" or ", " OR ").Replace(" and ", " AND ").Replace(" not ", " NOT ") : null;
+            terms = terms.Replace(" or ", " OR ").Replace(" and ", " AND ").Replace(" not ", " NOT ");
+            queryInfo.Terms = terms;
+        }
     }
 
     private async void trialsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
