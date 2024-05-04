@@ -6,23 +6,22 @@
              xmlns:system="clr-namespace:System;assembly=netstandard"
              x:Class="ClinicalTrials.Apps.Query"
              x:DataType="m:QueryInfo"
+             HideSoftInputOnTapped="true" 
              >
     <ContentPage.Resources>
         <a:EnumPrettifier x:Key="EnumPretty" />
         <a:CommaList x:Key="CommaList" />
     </ContentPage.Resources>
     <Shell.TitleView>
-        <Grid ColumnDefinitions="*,*,*" x:Name="titleView">
+        <Grid ColumnDefinitions="*,6*" x:Name="titleView">
             <Button Text="&lt;" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Dark=White,Light=Black}" Clicked="Back_Clicked" Background="Transparent" HorizontalOptions="Start"/>
             <Label Text="{Binding Name}" MaxLines="2" LineBreakMode="TailTruncation" TextColor="{AppThemeBinding Dark=White, Light=Black}" FontAttributes="Bold"  FontSize="Small" HorizontalOptions="Center" VerticalOptions="Center" Grid.Column="1" x:Name="profileLabel"/>
-            <HorizontalStackLayout Grid.Column="2" HorizontalOptions="End">
-            </HorizontalStackLayout>
         </Grid>
     </Shell.TitleView>
     <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,*">
         <Grid Grid.ColumnSpan="3" BackgroundColor="MediumBlue" />
         <Label Text="Terms:" Grid.Column="0" Margin="5,0" VerticalOptions="CenterAndExpand" TextColor="White"/>
-        <Entry Text="{Binding Terms}" Grid.Column="1" x:Name="terms" Placeholder="condition names, etc..." Margin="0,10" PlaceholderColor="GhostWhite" TextColor="White" BackgroundColor="MediumBlue"/>
+        <Entry Text="{Binding Terms}" Grid.Column="1" x:Name="terms" Placeholder="condition names, etc..." Margin="0,10" PlaceholderColor="GhostWhite" TextColor="White" BackgroundColor="MediumBlue" />
         <Button Text="Fetch" Clicked="Fetch_Clicked" Grid.Column="2" BackgroundColor="Transparent" TextColor="White"/>
         <CollectionView x:Name="trialsView" ItemsSource="{Binding Studies}" Grid.Row="1" Grid.ColumnSpan="3" SelectionMode="Single" SelectionChanged="trialsView_SelectionChanged">
             <CollectionView.ItemTemplate>
