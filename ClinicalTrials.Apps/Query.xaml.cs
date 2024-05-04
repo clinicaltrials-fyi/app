@@ -122,7 +122,7 @@ public partial class Query : ContentPage, IQueryAttributable
         if (selectedStudy != null)
         {
             await Save(QueryInfo);
-            Shell.Current.GoToAsync($"///webview?backQuery={QueryInfo.Name}&url=https://clinicaltrials.gov/study/{selectedStudy.ProtocolSection.IdentificationModule.NctId}?cond={QueryInfo.Terms}");
+            Shell.Current.GoToAsync($"///webview?backQuery={QueryInfo.Name}&title=ClinicalTrials.gov: {selectedStudy.ProtocolSection.IdentificationModule.NctId}&url=https://clinicaltrials.gov/study/{selectedStudy.ProtocolSection.IdentificationModule.NctId}?cond={QueryInfo.Terms}");
         }
     }
 

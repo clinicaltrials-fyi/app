@@ -1,3 +1,5 @@
+using System.Web;
+
 namespace ClinicalTrials.Apps;
 
 public partial class WebView : ContentPage, IQueryAttributable
@@ -14,7 +16,16 @@ public partial class WebView : ContentPage, IQueryAttributable
         if (query.Count > 0)
         {
             BackQuery = query["backQuery"] as string;
-
+            var title = query["title"] as string;
+            if (title != null)
+            {
+                Title = HttpUtility.UrlDecode(title);
+            }
+            else
+            {
+                Title = "";
+            }
+            
             var url = query["url"] as string;
             if (url != null)
             {
