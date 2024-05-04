@@ -82,7 +82,9 @@ public partial class Query : ContentPage, IQueryAttributable
     }
 
     static public async Task<bool> CheckForUpdates(QueryInfo queryInfo)
-    { 
+    {
+        PreprocessQueryTerms(queryInfo);
+
         ObservableCollection<Study> oldStudies = new(queryInfo.Studies);
         queryInfo.Studies.Clear();
 
@@ -119,6 +121,17 @@ public partial class Query : ContentPage, IQueryAttributable
         {
             return false;
         }
+    }
+
+    private static void PreprocessQueryTerms(QueryInfo queryInfo)
+    {
+        var terms = queryInfo.Terms;
+        if (terms != null && terms.StartsWith("not "))
+        {
+            terms = "NOT" + terms.Substring(3);
+        }
+
+        queryInfo.Terms = terms != null ? terms.Replace(" or ", " OR ").Replace(" and ", " AND ").Replace(" not ", " NOT ") : null;
     }
 
     private async void trialsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
