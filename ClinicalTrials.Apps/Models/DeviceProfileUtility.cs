@@ -120,7 +120,7 @@ namespace ClinicalTrials.Apps
                     return loadedData;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 var loadedData = new QueryInfo(key) { Terms = key };
                 return loadedData;

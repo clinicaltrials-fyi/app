@@ -39,7 +39,7 @@ public partial class Query : ContentPage, IQueryAttributable
         }
     }
 
-    private QueryInfo QueryInfo { get; set; }
+    private QueryInfo? QueryInfo { get; set; } = null;
 
     public static async Task Save(QueryInfo queryInfo)
     {
@@ -58,7 +58,7 @@ public partial class Query : ContentPage, IQueryAttributable
     private async void HideInvoked(object sender, EventArgs e)
     {
         var item = (sender as BindableObject)?.BindingContext as Study;
-        if (item != null)
+        if (item != null && QueryInfo != null)
         {
             QueryInfo.TrialsToHide.Add(item.ProtocolSection.IdentificationModule.NctId);
             QueryInfo.Studies.Remove(item);
@@ -74,10 +74,13 @@ public partial class Query : ContentPage, IQueryAttributable
     private HttpClient httpClient = new HttpClient();
     private async void Fetch_Clicked(object sender, EventArgs e)
     {
-        var updated = await CheckForUpdates(QueryInfo);
-        if (updated)
+        if (QueryInfo != null)
         {
-            await Save(QueryInfo);
+            var updated = await CheckForUpdates(QueryInfo);
+            if (updated)
+            {
+                await Save(QueryInfo);
+            }
         }
     }
 
@@ -96,7 +99,7 @@ public partial class Query : ContentPage, IQueryAttributable
         var sortList = new List<string>() { sort };
         var pagedStudies = await studiesClient.ListStudiesAsync(Format.Json, MarkupFormat.Markdown, query_cond:null , query_term: queryInfo.Terms ?? "", query_locn: null, query_titles: null, query_intr: null, query_outc: null, query_spons: null, query_lead: null, query_id: null, query_patient: null, filter_overallStatus: null,
             filter_geo: null, filter_ids: null, filter_advanced: null, filter_synonyms: null, postFilter_overallStatus: null, postFilter_geo: null, postFilter_ids: null, postFilter_advanced: null, postFilter_synonyms: null, aggFilters: null, geoDecay: null, fields: fieldsList, sort: sortList,
-            countTotal: true, pageSize: 100, pageToken: null, cancellationToken: token);
+            countTotal: true, pageSize: 5000, pageToken: null, cancellationToken: token);
         foreach (var study in pagedStudies.Studies.OrderByDescending(s => s.ProtocolSection.StatusModule.LastUpdatePostDateStruct.Date))
         {
             if (!queryInfo.TrialsToHide.Contains(study.ProtocolSection.IdentificationModule.NctId))
@@ -131,7 +134,7 @@ public partial class Query : ContentPage, IQueryAttributable
             terms = terms.Trim();
             if (terms.StartsWith("not "))
             {
-                terms = "NOT" + terms.Substring(3);
+                terms = "NOT" + terms[3..];
             }
 
             terms = terms.Replace(" or ", " OR ").Replace(" and ", " AND ").Replace(" not ", " NOT ");
@@ -142,104 +145,10 @@ public partial class Query : ContentPage, IQueryAttributable
     private async void trialsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         var selectedStudy = trialsView.SelectedItem as Study;
-        if (selectedStudy != null)
+        if (selectedStudy != null && QueryInfo != null)
         {
             await Save(QueryInfo);
             await Shell.Current.GoToAsync($"///webview?backQuery={QueryInfo.Name}&title=ClinicalTrials.gov: {selectedStudy.ProtocolSection.IdentificationModule.NctId}&url=https://clinicaltrials.gov/study/{selectedStudy.ProtocolSection.IdentificationModule.NctId}?cond={QueryInfo.Terms}");
-        }
-    }
-
-    private async Task CallLegacyAPI()
-    {
-        var moreToGet = 1;
-        var maxRank = 999;
-        var minRank = 1;
-        int trialCount;
-
-        var trialList = QueryInfo.Trials;
-        QueryRoot? data = null;
-
-        while (moreToGet > 0)
-        {
-            var url = "https://classic.clinicaltrials.gov/api/query/study_fields?expr=" + Uri.EscapeDataString(QueryInfo.Terms ?? "")
-            + "&fields=NCTId,Condition,LocationFacility,BriefTitle,StudyType,Phase,OverallStatus,WhyStopped,LeadSponsorName,InterventionName,StudyFirstPostDate,StartDate,StartDateType,LastUpdatePostDate,PrimaryCompletionDate,CompletionDate,SeeAlsoLinkURL,SeeAlsoLinkLabel,EnrollmentCount&fmt=JSON&min_rnk=" + minRank.ToString() + "&max_rnk=" + maxRank.ToString();
-            var res = await httpClient.GetAsync(url);
-
-            if (res.IsSuccessStatusCode)
-            {
-                data = await JsonSerializer.DeserializeAsync<QueryRoot>(await res.Content.ReadAsStreamAsync());
-            }
-
-            if (data != null && data.StudyFieldsResponse != null)
-            { // && "StudyFields" in data.StudyFieldsResponse) {
-                trialCount = data.StudyFieldsResponse.NStudiesFound;
-                foreach (var trial in data.StudyFieldsResponse.StudyFields)
-                {
-                    if (trial != null)
-                    {
-                        string? CompletionDate = null;
-                        if (trial.CompletionDate?.Count != 0)
-                        {
-                            CompletionDate = first(trial.CompletionDate);
-                        }
-                        else if (trial.PrimaryCompletionDate?.Count != 0)
-                        {
-                            CompletionDate = first(trial.PrimaryCompletionDate);
-                        }
-                        else if (trial.LastUpdatePostDate?.Count != 0)
-                        {
-                            CompletionDate = first(trial.LastUpdatePostDate);
-                        }
-                        else
-                        {
-                            throw new InvalidDataException("CompletionData not valid");
-                        }
-
-                        trial.EndDate = DateTime.Parse(CompletionDate).ToShortDateString();
-
-                        var lastPhase = last(trial.Phase);
-                        var firstPhase = first(trial.Phase);
-                        trial.PhaseInfo = Trial.GetPhaseInfo(lastPhase, firstPhase, first(trial.StudyType));
-
-                        trial.Closed = trial.GetClosedInfo();
-
-                        switch (first(trial.OverallStatus))
-                        {
-                            case "Enrolling by invitation":
-                            case "Not yet recruiting":
-                            case "Recruiting":
-                            case "Approved for marketing":
-                            case "Active, not recruiting":
-                                trial.OverallStatusStyle = "Active";
-                                break;
-                            case "Unknown status":
-                                trial.OverallStatusStyle = "Unknown";
-                                break;
-                            default:
-                                trial.OverallStatusStyle = first(trial.OverallStatus);
-                                break;
-                        }
-
-                        if (trialList == null)
-                        {
-                            trialList = [];
-                        }
-
-                        trialList.Add(trial);
-                    }
-                }
-
-                if (trialCount > maxRank && maxRank < 5000)
-                {
-                    minRank = minRank + 999;
-                    maxRank = maxRank + 999;
-                    moreToGet = 1;
-                }
-                else
-                {
-                    moreToGet = 0;
-                }
-            }
         }
     }
 

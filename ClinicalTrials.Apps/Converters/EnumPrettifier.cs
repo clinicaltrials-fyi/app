@@ -6,14 +6,17 @@ namespace ClinicalTrials.Apps
     {
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            var type = value.GetType();
-            if (type.IsEnum)
+            if (value != null)
             {
-                string? enumValue = Enum.GetName(type, value);
-                if (enumValue != null)
+                var type = value.GetType();
+                if (type.IsEnum)
                 {
-                    enumValue = enumValue.Replace('_', ' ');
-                    return TextInfo.ToTitleCase(enumValue.ToLowerInvariant());
+                    string? enumValue = Enum.GetName(type, value);
+                    if (enumValue != null)
+                    {
+                        enumValue = enumValue.Replace('_', ' ');
+                        return TextInfo.ToTitleCase(enumValue.ToLowerInvariant());
+                    }
                 }
             }
 
