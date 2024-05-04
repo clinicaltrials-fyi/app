@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Web;
 using ClinicalTrials.Core;
@@ -40,32 +41,28 @@ public partial class Query : ContentPage, IQueryAttributable
 
     private QueryInfo QueryInfo { get; set; }
 
-    private async void Save_Clicked(object sender, EventArgs e)
+    public static async Task Save(QueryInfo queryInfo)
     {
-        Save();
-    }
-
-    private async void Save()
-    {
-        var terms = QueryInfo.Terms;
+        var terms = queryInfo.Terms;
         if (terms != null && !string.IsNullOrEmpty(terms.Trim()))
         {
-            if (QueryInfo.Name == "")
+            if (queryInfo.Name == "")
             {
-                QueryInfo.Name = await DeviceProfileUtility.FindProfileName(terms);
+                queryInfo.Name = await DeviceProfileUtility.FindProfileName(terms);
             }
 
-            await DeviceProfileUtility.Save(QueryInfo.Name, QueryInfo);
+            await DeviceProfileUtility.Save(queryInfo.Name, queryInfo);
         }
     }
 
-    private void HideInvoked(object sender, EventArgs e)
+    private async void HideInvoked(object sender, EventArgs e)
     {
         var item = (sender as BindableObject)?.BindingContext as Study;
         if (item != null)
         {
             QueryInfo.TrialsToHide.Add(item.ProtocolSection.IdentificationModule.NctId);
             QueryInfo.Studies.Remove(item);
+            await Save(QueryInfo);
         }
     }
 
@@ -75,9 +72,19 @@ public partial class Query : ContentPage, IQueryAttributable
     }
 
     private HttpClient httpClient = new HttpClient();
-    private async void Go_Clicked(object sender, EventArgs e)
+    private async void Fetch_Clicked(object sender, EventArgs e)
     {
-        QueryInfo.Studies.Clear();
+        var updated = await CheckForUpdates(QueryInfo);
+        if (updated)
+        {
+            await Save(QueryInfo);
+        }
+    }
+
+    static public async Task<bool> CheckForUpdates(QueryInfo queryInfo)
+    { 
+        ObservableCollection<Study> oldStudies = new(queryInfo.Studies);
+        queryInfo.Studies.Clear();
 
         StudiesClient studiesClient = new(new HttpClient()) { ReadResponseAsString = true };
         var token = new CancellationToken();
@@ -85,26 +92,36 @@ public partial class Query : ContentPage, IQueryAttributable
         var fieldsList = new List<string>() { fields };
         var sort = "LastUpdatePostDate:desc";
         var sortList = new List<string>() { sort };
-        var pagedStudies = await studiesClient.ListStudiesAsync(Format.Json, MarkupFormat.Markdown, QueryInfo.Terms ?? "", query_term: null, query_locn: null, query_titles: null, query_intr: null, query_outc: null, query_spons: null, query_lead: null, query_id: null, query_patient: null, filter_overallStatus: null,
+        var pagedStudies = await studiesClient.ListStudiesAsync(Format.Json, MarkupFormat.Markdown, queryInfo.Terms ?? "", query_term: null, query_locn: null, query_titles: null, query_intr: null, query_outc: null, query_spons: null, query_lead: null, query_id: null, query_patient: null, filter_overallStatus: null,
             filter_geo: null, filter_ids: null, filter_advanced: null, filter_synonyms: null, postFilter_overallStatus: null, postFilter_geo: null, postFilter_ids: null, postFilter_advanced: null, postFilter_synonyms: null, aggFilters: null, geoDecay: null, fields: fieldsList, sort: sortList,
             countTotal: true, pageSize: 100, pageToken: null, cancellationToken: token);
         foreach (var study in pagedStudies.Studies.OrderByDescending(s => s.ProtocolSection.StatusModule.LastUpdatePostDateStruct.Date))
         {
-            if (!QueryInfo.TrialsToHide.Contains(study.ProtocolSection.IdentificationModule.NctId))
+            if (!queryInfo.TrialsToHide.Contains(study.ProtocolSection.IdentificationModule.NctId))
             {
-                QueryInfo.Studies.Add(study);
+                queryInfo.Studies.Add(study);
             }
         }
 
-        Save();
+        DateTimeOffset? previousLastUpdate = oldStudies.Count == 0 ? null : oldStudies[0].ProtocolSection.StatusModule.LastUpdatePostDateStruct.Date;
+        if (queryInfo.Studies.Count > oldStudies.Count 
+            || queryInfo.Studies[0].ProtocolSection.StatusModule.LastUpdatePostDateStruct.Date > previousLastUpdate)
+        {
+            queryInfo.PreviousLastSave = previousLastUpdate;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
-    private void trialsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void trialsView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         var selectedStudy = trialsView.SelectedItem as Study;
         if (selectedStudy != null)
         {
-            Save();
+            await Save(QueryInfo);
             Shell.Current.GoToAsync($"///webview?backQuery={QueryInfo.Name}&url=https://clinicaltrials.gov/study/{selectedStudy.ProtocolSection.IdentificationModule.NctId}?cond={QueryInfo.Terms}");
         }
     }

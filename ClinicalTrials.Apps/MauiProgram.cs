@@ -1,5 +1,4 @@
-﻿using MauiHelper;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace ClinicalTrials.Apps
 {
@@ -20,7 +19,7 @@ namespace ClinicalTrials.Apps
     		builder.Logging.AddDebug();
 #endif
 #if IOS
-            EntryHandler.AddDone();
+            MauiHelper.EntryHandler.AddDone();
 #endif
             return builder.Build();
         }

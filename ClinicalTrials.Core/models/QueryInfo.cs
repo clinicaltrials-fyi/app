@@ -23,6 +23,7 @@ public class QueryInfo : NotifyingBase
     // Legacy API
     [JsonIgnore]
     public ObservableCollection<Trial> Trials { get; set; } = [];
+    public DateTimeOffset? PreviousLastSave { get; set; }
 
     private string? name;
     private string? terms;

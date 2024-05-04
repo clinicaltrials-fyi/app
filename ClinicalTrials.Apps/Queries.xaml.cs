@@ -10,6 +10,7 @@ namespace ClinicalTrials.Apps
         {
             InitializeComponent();
             this.Loaded += Queries_Loaded;
+            this.BindingContext = this;
         }
 
         public static readonly string NewQueryKey = "__newQuery__";
@@ -32,6 +33,27 @@ namespace ClinicalTrials.Apps
             await NavigateToProfile(NewQueryKey);
         }
 
+        private async void RefreshQueries_Clicked(object sender, EventArgs e)
+        {
+            fetchButton.Text = "...";
+            foreach (var queryFileObj in queryView.ItemsSource)
+            {
+                var queryFile = queryFileObj as QueryFile;
+                if (queryFile != null)
+                {
+                    var queryInfo = await DeviceProfileUtility.Load(queryFile.Name);
+                    var updated = await Query.CheckForUpdates(queryInfo);
+                    if (updated)
+                    {
+                        await Query.Save(queryInfo);
+                        queryFile.LastUpdated = DateTime.Now;
+                    }
+                }
+            }
+
+            fetchButton.Text = "🔃Fetch All";
+        }
+
         private async void queryView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var selectedQuery = queryView.SelectedItem as QueryFile;
@@ -51,7 +73,7 @@ namespace ClinicalTrials.Apps
 
         private void DeleteItem_Invoked(object sender, EventArgs e)
         {
-            var item = (sender as BindableObject).BindingContext as QueryFile;
+            var item = (sender as BindableObject)?.BindingContext as QueryFile;
             queryFiles.Remove(item);
             DeviceProfileUtility.DeleteItem(item.Name);
         }

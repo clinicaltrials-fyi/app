@@ -4,25 +4,28 @@
              xmlns:m="clr-namespace:ClinicalTrials.Core;assembly=ClinicalTrials.Core"
              x:Class="ClinicalTrials.Apps.Queries">
 
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="📝New" Clicked="NewQuery_Clicked" SemanticProperties.Description="New Query" />
-    </ContentPage.ToolbarItems>
-    <VerticalStackLayout Spacing="25">
-        <CollectionView x:Name="queryView" SelectionMode="Single" SelectionChanged="queryView_SelectionChanged">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="m:QueryFile">
-                    <SwipeView>
-                        <SwipeView.RightItems>
-                            <SwipeItem Text="Delete" BackgroundColor="LightPink" Invoked="DeleteItem_Invoked" />
-                        </SwipeView.RightItems>
-                        <VerticalStackLayout>
-                            <Label Margin="20,0" Text="{Binding Name}" FontSize="20" />
-                            <Label Margin="20,0,0,5" Text="{Binding LastUpdated}" FontSize="14" TextColor="Gray" />
-                        </VerticalStackLayout>
-                    </SwipeView>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-    </VerticalStackLayout>
-
+    <Shell.TitleView>
+        <Grid ColumnDefinitions="*,*,*" x:Name="titleView">
+            <Label Text="Queries" MaxLines="2" LineBreakMode="TailTruncation" TextColor="{AppThemeBinding Dark=White, Light=Black}" FontAttributes="Bold"  FontSize="Small" HorizontalOptions="Center" VerticalOptions="Center" Grid.Column="1" x:Name="profileLabel"/>
+            <HorizontalStackLayout Grid.Column="2" HorizontalOptions="End">
+                <Button Text="📝New" Clicked="NewQuery_Clicked" SemanticProperties.Description="New Query" Background="Transparent" TextColor="{AppThemeBinding Dark=White,Light=Black}" />
+                <Button Text="🔃Fetch All" Clicked="RefreshQueries_Clicked" SemanticProperties.Description="Fetch All" Background="Transparent" TextColor="{AppThemeBinding Dark=White,Light=Black}" x:Name="fetchButton" />
+            </HorizontalStackLayout>
+        </Grid>
+    </Shell.TitleView>
+    <CollectionView x:Name="queryView" SelectionMode="Single" SelectionChanged="queryView_SelectionChanged">
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="m:QueryFile">
+                <SwipeView>
+                    <SwipeView.RightItems>
+                        <SwipeItem Text="Delete" BackgroundColor="LightPink" Invoked="DeleteItem_Invoked" />
+                    </SwipeView.RightItems>
+                    <VerticalStackLayout>
+                        <Label Margin="20,0" Text="{Binding Name}" FontSize="20" />
+                        <Label Margin="20,0,0,5" Text="{Binding LastUpdated}" FontSize="14" TextColor="Gray" />
+                    </VerticalStackLayout>
+                </SwipeView>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
 </ContentPage>

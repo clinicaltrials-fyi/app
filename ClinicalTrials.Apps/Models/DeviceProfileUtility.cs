@@ -101,19 +101,28 @@ namespace ClinicalTrials.Apps
             ArgumentNullException.ThrowIfNull(key);
 
             string targetFile = GetFilename(key);
-            var json = await File.ReadAllTextAsync(targetFile);
 
-            if (json != null)
+            try
             {
-                var options = new JsonSerializerOptions()
+                var json = await File.ReadAllTextAsync(targetFile);
+
+                if (json != null)
                 {
-                    Converters =
+                    var options = new JsonSerializerOptions()
+                    {
+                        Converters =
                             {
                                 new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
                             }
-                };
+                    };
 
-                var loadedData = QueryInfo.LoadFromJson(json, options);
+                    var loadedData = QueryInfo.LoadFromJson(json, options);
+                    return loadedData;
+                }
+            }
+            catch (Exception ex)
+            {
+                var loadedData = new QueryInfo(key) { Terms = key };
                 return loadedData;
             }
 
