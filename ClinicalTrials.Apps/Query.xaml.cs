@@ -92,7 +92,7 @@ public partial class Query : ContentPage, IQueryAttributable
         var fieldsList = new List<string>() { fields };
         var sort = "LastUpdatePostDate:desc";
         var sortList = new List<string>() { sort };
-        var pagedStudies = await studiesClient.ListStudiesAsync(Format.Json, MarkupFormat.Markdown, queryInfo.Terms ?? "", query_term: null, query_locn: null, query_titles: null, query_intr: null, query_outc: null, query_spons: null, query_lead: null, query_id: null, query_patient: null, filter_overallStatus: null,
+        var pagedStudies = await studiesClient.ListStudiesAsync(Format.Json, MarkupFormat.Markdown, query_cond:null , query_term: queryInfo.Terms ?? "", query_locn: null, query_titles: null, query_intr: null, query_outc: null, query_spons: null, query_lead: null, query_id: null, query_patient: null, filter_overallStatus: null,
             filter_geo: null, filter_ids: null, filter_advanced: null, filter_synonyms: null, postFilter_overallStatus: null, postFilter_geo: null, postFilter_ids: null, postFilter_advanced: null, postFilter_synonyms: null, aggFilters: null, geoDecay: null, fields: fieldsList, sort: sortList,
             countTotal: true, pageSize: 100, pageToken: null, cancellationToken: token);
         foreach (var study in pagedStudies.Studies.OrderByDescending(s => s.ProtocolSection.StatusModule.LastUpdatePostDateStruct.Date))
@@ -104,7 +104,12 @@ public partial class Query : ContentPage, IQueryAttributable
         }
 
         DateTimeOffset? previousLastUpdate = oldStudies.Count == 0 ? null : oldStudies[0].ProtocolSection.StatusModule.LastUpdatePostDateStruct.Date;
-        if (queryInfo.Studies.Count > oldStudies.Count 
+
+        if (queryInfo.Studies.Count == 0)
+        {
+            return true;
+        }
+        else if (queryInfo.Studies.Count > oldStudies.Count 
             || queryInfo.Studies[0].ProtocolSection.StatusModule.LastUpdatePostDateStruct.Date > previousLastUpdate)
         {
             queryInfo.PreviousLastSave = previousLastUpdate;

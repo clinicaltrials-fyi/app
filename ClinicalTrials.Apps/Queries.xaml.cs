@@ -35,7 +35,7 @@ namespace ClinicalTrials.Apps
 
         private async void RefreshQueries_Clicked(object sender, EventArgs e)
         {
-            fetchButton.Text = "...";
+            fetchButton.Text = "⏱️...";
             foreach (var queryFileObj in queryView.ItemsSource)
             {
                 var queryFile = queryFileObj as QueryFile;
